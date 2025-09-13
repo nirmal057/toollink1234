@@ -291,9 +291,9 @@ npm run start
 
 ---
 
-**Migration Timeline**: 2-3 weeks  
-**Risk Level**: Medium (database schema changes)  
-**Rollback Time**: < 1 hour  
-**Team Training Required**: 2-4 hours per role  
+**Migration Timeline**: 2-3 weeks
+**Risk Level**: Medium (database schema changes)
+**Rollback Time**: < 1 hour
+**Team Training Required**: 2-4 hours per role
 
 For questions or issues during migration, refer to the development team or create issues in the project repository.
