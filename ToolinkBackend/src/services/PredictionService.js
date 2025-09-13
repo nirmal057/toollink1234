@@ -58,7 +58,7 @@ class PredictionService {
 
         // Simple trend analysis
         const recentDays = consumption.slice(-7); // Last 7 days
-        const recentAvg = recentDays.length > 0 
+        const recentAvg = recentDays.length > 0
             ? recentDays.reduce((sum, day) => sum + day.dailyConsumption, 0) / recentDays.length
             : avgDailyConsumption;
 
@@ -107,7 +107,7 @@ class PredictionService {
             const prediction = await this.predictDemand(warehouseId, materialId, 30);
 
             // Calculate days until stockout
-            const daysUntilStockout = prediction.predictedDailyDemand > 0 
+            const daysUntilStockout = prediction.predictedDailyDemand > 0
                 ? Math.floor(currentStock / prediction.predictedDailyDemand)
                 : 999;
 

@@ -13,18 +13,18 @@ class OrderService {
         try {
             // Validate materials exist and are active
             const materialIds = orderData.items.map(item => item.materialId);
-            const materials = await Material.find({ 
-                _id: { $in: materialIds }, 
-                isActive: true 
+            const materials = await Material.find({
+                _id: { $in: materialIds },
+                isActive: true
             });
-            
+
             if (materials.length !== materialIds.length) {
                 throw new Error('One or more materials not found or inactive');
             }
 
             // Calculate item prices
             const materialPriceMap = new Map(materials.map(m => [m._id.toString(), m.sellingPrice]));
-            
+
             orderData.items.forEach(item => {
                 item.unitPrice = materialPriceMap.get(item.materialId.toString()) || 0;
                 item.totalPrice = item.unitPrice * item.requestedQty;
@@ -71,13 +71,13 @@ class OrderService {
 
                 // Determine warehouse priority (preferred first, then by stock availability)
                 let warehousePriority = [...warehouses];
-                
+
                 if (item.preferredWarehouseId) {
-                    const preferredWarehouse = warehouses.find(w => 
+                    const preferredWarehouse = warehouses.find(w =>
                         w._id.toString() === item.preferredWarehouseId.toString()
                     );
                     if (preferredWarehouse) {
-                        warehousePriority = [preferredWarehouse, ...warehouses.filter(w => 
+                        warehousePriority = [preferredWarehouse, ...warehouses.filter(w =>
                             w._id.toString() !== item.preferredWarehouseId.toString()
                         )];
                     }
@@ -88,13 +88,13 @@ class OrderService {
                     if (remainingQty <= 0) break;
 
                     const availableStock = await StockLedger.getCurrentStock(
-                        warehouse._id, 
+                        warehouse._id,
                         item.materialId._id
                     );
 
                     if (availableStock > 0) {
                         const allocatedQty = Math.min(remainingQty, availableStock);
-                        
+
                         const subOrder = new SubOrder({
                             mainOrderId: mainOrder._id,
                             warehouseId: warehouse._id,
@@ -106,7 +106,7 @@ class OrderService {
 
                         await subOrder.addHistory('Sub-order created from main order', mainOrder.createdBy);
                         subOrders.push(subOrder);
-                        
+
                         remainingQty -= allocatedQty;
                     }
                 }
@@ -199,7 +199,7 @@ class OrderService {
 
             if (hasChanges) {
                 await subOrder.save();
-                
+
                 // Add history entry
                 const changeDetails = Object.entries(updates)
                     .filter(([key, value]) => oldValues[key] !== value)
@@ -278,10 +278,10 @@ class OrderService {
         try {
             const subOrders = await SubOrder.find({ mainOrderId });
             const allDelivered = subOrders.every(so => so.status === 'delivered');
-            
+
             if (allDelivered && subOrders.length > 0) {
-                await MainOrder.findByIdAndUpdate(mainOrderId, { 
-                    status: 'completed' 
+                await MainOrder.findByIdAndUpdate(mainOrderId, {
+                    status: 'completed'
                 });
 
                 const mainOrder = await MainOrder.findById(mainOrderId)
@@ -309,15 +309,15 @@ class OrderService {
     async getOrders(filters = {}) {
         try {
             const query = {};
-            
+
             if (filters.status) {
                 query.status = filters.status;
             }
-            
+
             if (filters.customerId) {
                 query.customerId = filters.customerId;
             }
-            
+
             if (filters.startDate || filters.endDate) {
                 query.createdAt = {};
                 if (filters.startDate) query.createdAt.$gte = new Date(filters.startDate);

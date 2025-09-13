@@ -52,25 +52,25 @@ stockLedgerSchema.index({ warehouseId: 1, createdAt: -1 });
 stockLedgerSchema.index({ materialId: 1, createdAt: -1 });
 
 // Static method to get current stock for a material in a warehouse
-stockLedgerSchema.statics.getCurrentStock = async function(warehouseId, materialId) {
+stockLedgerSchema.statics.getCurrentStock = async function (warehouseId, materialId) {
     const latestEntry = await this.findOne({
         warehouseId,
         materialId
     }).sort({ createdAt: -1 });
-    
+
     return latestEntry ? latestEntry.runningBalance : 0;
 };
 
 // Static method to get stock movements for a period
-stockLedgerSchema.statics.getMovements = async function(warehouseId, materialId, startDate, endDate) {
+stockLedgerSchema.statics.getMovements = async function (warehouseId, materialId, startDate, endDate) {
     const query = { warehouseId, materialId };
-    
+
     if (startDate || endDate) {
         query.createdAt = {};
         if (startDate) query.createdAt.$gte = startDate;
         if (endDate) query.createdAt.$lte = endDate;
     }
-    
+
     return this.find(query).sort({ createdAt: -1 }).populate('recordedBy', 'username');
 };
 

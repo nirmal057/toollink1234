@@ -86,7 +86,7 @@ const subOrderSchema = new mongoose.Schema({
 });
 
 // Generate sub-order number
-subOrderSchema.pre('save', async function(next) {
+subOrderSchema.pre('save', async function (next) {
     if (!this.subOrderNumber) {
         const mainOrder = await mongoose.model('MainOrder').findById(this.mainOrderId);
         if (mainOrder) {
@@ -98,13 +98,13 @@ subOrderSchema.pre('save', async function(next) {
 });
 
 // Calculate total price before saving
-subOrderSchema.pre('save', function(next) {
+subOrderSchema.pre('save', function (next) {
     this.totalPrice = this.qty * this.unitPrice;
     next();
 });
 
 // Method to add history entry
-subOrderSchema.methods.addHistory = function(action, byUserId, note = '') {
+subOrderSchema.methods.addHistory = function (action, byUserId, note = '') {
     this.history.push({
         action,
         byUserId,
@@ -115,7 +115,7 @@ subOrderSchema.methods.addHistory = function(action, byUserId, note = '') {
 };
 
 // Method to update status with history
-subOrderSchema.methods.updateStatus = function(newStatus, byUserId, note = '') {
+subOrderSchema.methods.updateStatus = function (newStatus, byUserId, note = '') {
     const oldStatus = this.status;
     this.status = newStatus;
     return this.addHistory(`Status changed from ${oldStatus} to ${newStatus}`, byUserId, note);

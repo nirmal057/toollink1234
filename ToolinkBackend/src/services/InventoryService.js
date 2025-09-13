@@ -160,7 +160,7 @@ class InventoryService {
 
         if (minThreshold && currentStock <= minThreshold) {
             const material = await Material.findById(materialId);
-            
+
             await NotificationService.createNotification({
                 userId: warehouse.managerId,
                 type: 'LOW_STOCK',
@@ -175,7 +175,7 @@ class InventoryService {
      */
     static async getStockHistory(warehouseId, materialId = null, startDate = null, endDate = null) {
         const query = { warehouseId };
-        
+
         if (materialId) query.materialId = materialId;
         if (startDate || endDate) {
             query.timestamp = {};
@@ -199,7 +199,7 @@ class InventoryService {
         for (const warehouse of warehouses) {
             for (const [materialId, minThreshold] of warehouse.minStockThresholds) {
                 const currentStock = await this.getCurrentStock(warehouse._id, materialId);
-                
+
                 if (currentStock <= minThreshold) {
                     const material = await Material.findById(materialId);
                     lowStockItems.push({

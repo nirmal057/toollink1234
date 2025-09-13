@@ -65,12 +65,12 @@ const warehouseSchema = new mongoose.Schema({
 warehouseSchema.index({ 'location.coordinates': '2dsphere' });
 
 // Instance method to get minimum threshold for a material
-warehouseSchema.methods.getMinThreshold = function(materialId) {
+warehouseSchema.methods.getMinThreshold = function (materialId) {
     return this.minStockThresholds.get(materialId.toString()) || 10;
 };
 
 // Instance method to set minimum threshold for a material
-warehouseSchema.methods.setMinThreshold = function(materialId, threshold) {
+warehouseSchema.methods.setMinThreshold = function (materialId, threshold) {
     this.minStockThresholds.set(materialId.toString(), threshold);
     return this.save();
 };

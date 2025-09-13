@@ -29,7 +29,7 @@ const warehouseValidation = [
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const { active = 'true', include_manager = 'true' } = req.query;
-        
+
         const query = {};
         if (active === 'true') query.isActive = true;
 
@@ -60,7 +60,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const warehouse = await Warehouse.findById(req.params.id)
             .populate('managerId', 'username email fullName');
-        
+
         if (!warehouse) {
             return res.status(404).json({
                 success: false,
@@ -82,13 +82,13 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // GET /api/warehouses/:id/stock - Get stock levels for a warehouse
-router.get('/:id/stock', 
-    authenticateToken, 
+router.get('/:id/stock',
+    authenticateToken,
     requireRole(['ADMIN', 'WAREHOUSE_MANAGER']),
     async (req, res) => {
         try {
             const { include_zero = 'false' } = req.query;
-            
+
             const warehouse = await Warehouse.findById(req.params.id);
             if (!warehouse) {
                 return res.status(404).json({
@@ -98,7 +98,7 @@ router.get('/:id/stock',
             }
 
             const stockLevels = await InventoryService.getWarehouseStock(
-                req.params.id, 
+                req.params.id,
                 include_zero === 'true'
             );
 
@@ -123,8 +123,8 @@ router.get('/:id/stock',
 );
 
 // POST /api/warehouses - Create new warehouse (ADMIN only)
-router.post('/', 
-    authenticateToken, 
+router.post('/',
+    authenticateToken,
     requireRole(['ADMIN']),
     warehouseValidation,
     async (req, res) => {

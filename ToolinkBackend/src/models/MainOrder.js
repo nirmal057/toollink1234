@@ -84,7 +84,7 @@ const mainOrderSchema = new mongoose.Schema({
 });
 
 // Generate order number
-mainOrderSchema.pre('save', async function(next) {
+mainOrderSchema.pre('save', async function (next) {
     if (!this.orderNumber) {
         const date = new Date();
         const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
@@ -100,7 +100,7 @@ mainOrderSchema.pre('save', async function(next) {
 });
 
 // Calculate total amount before saving
-mainOrderSchema.pre('save', function(next) {
+mainOrderSchema.pre('save', function (next) {
     this.totalAmount = this.items.reduce((total, item) => total + item.totalPrice, 0);
     next();
 });

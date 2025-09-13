@@ -58,7 +58,7 @@ feedbackSchema.index({ byUserId: 1, createdAt: -1 });
 feedbackSchema.index({ rating: 1, category: 1 });
 
 // Static method to get average rating
-feedbackSchema.statics.getAverageRating = async function(filter = {}) {
+feedbackSchema.statics.getAverageRating = async function (filter = {}) {
     const result = await this.aggregate([
         { $match: filter },
         {
@@ -69,12 +69,12 @@ feedbackSchema.statics.getAverageRating = async function(filter = {}) {
             }
         }
     ]);
-    
+
     return result.length > 0 ? result[0] : { averageRating: 0, totalFeedbacks: 0 };
 };
 
 // Static method to get rating distribution
-feedbackSchema.statics.getRatingDistribution = async function(filter = {}) {
+feedbackSchema.statics.getRatingDistribution = async function (filter = {}) {
     return this.aggregate([
         { $match: filter },
         {
