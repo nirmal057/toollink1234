@@ -27,6 +27,37 @@ const registerValidation = [
     body('role').optional().isIn(['customer', 'user', 'warehouse', 'cashier', 'driver', 'editor'])
 ];
 
+// Simple test login endpoint
+router.post('/test-login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        console.log('🔍 Test login request for:', email);
+
+        const user = await User.findByEmailOrUsername(email);
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        console.log('✅ User found, checking password...');
+        const isMatch = await user.comparePassword(password);
+
+        if (isMatch) {
+            console.log('✅ Password match! Login successful');
+            return res.json({
+                success: true,
+                message: 'Login successful',
+                user: { email: user.email, role: user.role }
+            });
+        } else {
+            console.log('❌ Password mismatch');
+            return res.status(401).json({ success: false, error: 'Invalid password' });
+        }
+    } catch (error) {
+        console.error('❌ Test login error:', error);
+        return res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
 // Login endpoint
 router.post('/login', loginValidation, async (req, res) => {
     try {
@@ -37,9 +68,7 @@ router.post('/login', loginValidation, async (req, res) => {
                 error: 'Validation failed',
                 details: errors.array()
             });
-        }
-
-        const { email, password } = req.body;
+        } const { email, password } = req.body;
 
         // Check if this is a pending customer first
         const pendingCustomer = await PendingCustomer.findByEmailOrUsername(email);
@@ -109,7 +138,26 @@ router.post('/login', loginValidation, async (req, res) => {
         }
 
         // Validate password
-        const isMatch = await user.comparePassword(password);
+        let isMatch = false;
+        try {
+            // Ensure password field is available for comparison
+            if (!user.password) {
+                logger.error('Password field not available for user:', user.email);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Authentication error',
+                    errorType: 'INTERNAL_ERROR'
+                });
+            }
+            isMatch = await user.comparePassword(password);
+        } catch (passwordError) {
+            logger.error('Password comparison error:', passwordError);
+            return res.status(500).json({
+                success: false,
+                error: 'Authentication error',
+                errorType: 'INTERNAL_ERROR'
+            });
+        }
         if (!isMatch) {
             await user.incLoginAttempts();
 

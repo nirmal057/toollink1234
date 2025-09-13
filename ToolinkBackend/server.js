@@ -143,6 +143,28 @@ app.get('/test-email', async (req, res) => {
     }
 });
 
+// Add request logging middleware
+app.use((req, res, next) => {
+    console.log(`🔍 Request: ${req.method} ${req.url}`);
+    next();
+});
+
+// Add comprehensive error handling
+process.on('unhandledRejection', (reason, promise) => {
+    logger.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+    if (reason && reason.stack) {
+        logger.error('Stack:', reason.stack);
+    }
+});
+
+process.on('uncaughtException', (error) => {
+    logger.error('❌ Uncaught Exception:', error);
+    if (error && error.stack) {
+        logger.error('Stack:', error.stack);
+    }
+    process.exit(1);
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -163,13 +185,15 @@ app.use('/api/enhanced', enhancedRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
+// Connect to MongoDB (LOCAL ONLY)
+const MONGODB_LOCAL_URI = 'mongodb://localhost:27017/toollink';
+mongoose.connect(MONGODB_LOCAL_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
     .then(async () => {
-        logger.info('Connected to MongoDB Atlas successfully');
+        logger.info('Connected to Local MongoDB successfully');
+        logger.info(`Database: ${MONGODB_LOCAL_URI}`);
 
         // Create default admin user
         await createDefaultAdmin();
@@ -186,33 +210,29 @@ mongoose.connect(process.env.MONGODB_URI, {
         process.exit(1);
     });
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-    logger.error('Unhandled Rejection at:', promise, 'reason:', err);
-    process.exit(1);
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-    logger.error('Uncaught Exception thrown:', err);
-    process.exit(1);
-});
-
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
     logger.info('SIGTERM received, shutting down gracefully');
-    mongoose.connection.close(() => {
+    try {
+        await mongoose.connection.close();
         logger.info('Database connection closed');
         process.exit(0);
-    });
+    } catch (error) {
+        logger.error('Error closing database connection:', error);
+        process.exit(1);
+    }
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
     logger.info('SIGINT received, shutting down gracefully');
-    mongoose.connection.close(() => {
+    try {
+        await mongoose.connection.close();
         logger.info('Database connection closed');
         process.exit(0);
-    });
+    } catch (error) {
+        logger.error('Error closing database connection:', error);
+        process.exit(1);
+    }
 });
 
 export default app;

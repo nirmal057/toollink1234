@@ -258,7 +258,7 @@ userSchema.statics.findByEmailOrUsername = function (identifier) {
             { email: identifier.toLowerCase() },
             { username: identifier }
         ]
-    });
+    }).select('+password'); // Explicitly include password field
 };
 
 // Static method to get user statistics

@@ -4,7 +4,7 @@ import logger from './logger.js';
 export const createDefaultAdmin = async () => {
     try {
         // Check if admin already exists
-        const adminExists = await User.findOne({ role: 'admin' });
+        const adminExists = await User.findOne({ role: 'ADMIN' });
 
         if (adminExists) {
             logger.info('Admin user already exists');
@@ -17,7 +17,7 @@ export const createDefaultAdmin = async () => {
             email: process.env.ADMIN_EMAIL || 'admin@toollink.com',
             password: process.env.ADMIN_PASSWORD || 'admin123',
             fullName: 'System Administrator',
-            role: 'admin',
+            role: 'ADMIN',
             isActive: true,
             isApproved: true,
             emailVerified: true,

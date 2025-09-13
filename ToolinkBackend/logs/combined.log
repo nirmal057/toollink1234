@@ -8027,3 +8027,535 @@
 {"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 15:40:46"}
 {"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 15:40:46"}
 {"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 15:40:46"}
+{"level":"info","message":"Connected to MongoDB Atlas successfully","service":"toollink-backend","timestamp":"2025-09-13 15:42:32"}
+{"_message":"User validation failed","errors":{"role":{"kind":"enum","message":"`admin` is not a valid enum value for path `role`.","name":"ValidatorError","path":"role","properties":{"enumValues":["ADMIN","WAREHOUSE_MANAGER","CASHIER","EDITOR","CUSTOMER"],"message":"`admin` is not a valid enum value for path `role`.","path":"role","type":"enum","value":"admin"},"value":"admin"}},"level":"error","message":"Error creating default admin user: User validation failed: role: `admin` is not a valid enum value for path `role`.","service":"toollink-backend","stack":"ValidationError: User validation failed: role: `admin` is not a valid enum value for path `role`.\n    at Document.invalidate (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\mongoose\\lib\\document.js:3219:32)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\mongoose\\lib\\document.js:3012:17\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\mongoose\\lib\\schematype.js:1368:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)","timestamp":"2025-09-13 15:42:32"}
+{"duration":"6ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 15:43:11","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 15:43:11"}
+{"duration":"49ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 15:43:11","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"Connected to MongoDB Atlas successfully","service":"toollink-backend","timestamp":"2025-09-13 15:43:30"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 15:43:30"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 15:43:30"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 15:43:30"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 15:43:30"}
+{"level":"info","message":"Connected to MongoDB Atlas successfully","service":"toollink-backend","timestamp":"2025-09-13 15:43:43"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 15:43:43"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 15:43:43"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 15:43:43"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 15:43:43"}
+{"duration":"4ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 15:45:43","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.104.0 Chrome/138.0.7204.235 Electron/37.3.1 Safari/537.36","userId":null}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 15:45:43"}
+{"duration":"42ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 15:45:43","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.104.0 Chrome/138.0.7204.235 Electron/37.3.1 Safari/537.36","userId":null}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 15:47:18"}
+{"duration":"23ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 15:47:18","url":"/api/auth/login","userAgent":"node","userId":null}
+{"level":"info","message":"🔄 Initializing database connection...","service":"toollink-backend","timestamp":"2025-09-13 15:49:00"}
+{"level":"info","message":"🔗 Connection URI: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 15:49:00"}
+{"level":"info","message":"📡 Database Type: Local MongoDB","service":"toollink-backend","timestamp":"2025-09-13 15:49:00"}
+{"level":"info","message":"✅ Database connected successfully","service":"toollink-backend","timestamp":"2025-09-13 15:49:00"}
+{"level":"info","message":"📊 Database: toollink","service":"toollink-backend","timestamp":"2025-09-13 15:49:00"}
+{"level":"info","message":"🏠 Host: localhost","service":"toollink-backend","timestamp":"2025-09-13 15:49:00"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 15:49:00"}
+{"level":"info","message":"INIT_COMPLETE received. Closing database connection...","service":"toollink-backend","timestamp":"2025-09-13 15:49:00"}
+{"level":"warn","message":"🟡 Database disconnected. Attempting to reconnect...","service":"toollink-backend","timestamp":"2025-09-13 15:49:00"}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 15:49:31"}
+{"duration":"17ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 15:49:31","url":"/api/auth/login","userAgent":"node","userId":null}
+{"level":"info","message":"Connected to MongoDB Atlas successfully","service":"toollink-backend","timestamp":"2025-09-13 15:52:04"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 15:52:04"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 15:52:04"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 15:52:04"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 15:52:04"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 15:53:00"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 15:53:08"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 15:53:08"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 15:53:08"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 15:53:08"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 15:53:08"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 15:53:08"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 15:53:21"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 15:53:32"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 15:53:32"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 15:53:32"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 15:53:32"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 15:53:32"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 15:53:32"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 15:53:43"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 15:54:11"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 15:54:11"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 15:54:11"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 15:54:11"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 15:54:11"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 15:54:11"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 15:54:25"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 15:55:03"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 15:55:03"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 15:55:03"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 15:55:03"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 15:55:03"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 15:55:03"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 15:55:18"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 15:55:35"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 15:55:35"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 15:55:35"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 15:55:35"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 15:55:35"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 15:55:35"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 15:57:38"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 15:58:08"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 15:58:08"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 15:58:08"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 15:58:08"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 15:58:08"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 15:58:08"}
+{"duration":"6ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 15:58:23","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 15:58:23"}
+{"duration":"52ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 15:58:23","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 15:58:26"}
+{"duration":"26ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 15:58:26","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 15:59:19","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.104.0 Chrome/138.0.7204.235 Electron/37.3.1 Safari/537.36","userId":null}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 15:59:19"}
+{"duration":"19ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 15:59:19","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.104.0 Chrome/138.0.7204.235 Electron/37.3.1 Safari/537.36","userId":null}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:01:05"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:01:05"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:01:05"}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 16:02:28"}
+{"duration":"15ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 16:02:28","url":"/api/auth/login","userAgent":"node","userId":null}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:03:13"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:03:13"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:03:13"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:03:13"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:03:13"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:03:13"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 16:03:29"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:03:58"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:03:58"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:03:58"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:03:58"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:03:58"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:03:58"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 16:04:18"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:06:02"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:06:02"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:06:02"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:06:02"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:06:02"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:06:02"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 16:06:21"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:06:50"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:06:50"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:06:50"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:06:50"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:06:50"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:06:50"}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 16:07:11"}
+{"duration":"47ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 16:07:11","url":"/api/auth/login","userAgent":"node","userId":null}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:08:24"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:08:24"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:08:24"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:08:24"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:08:24"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:08:24"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 16:08:39"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:08:51"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:08:51"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:08:51"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:08:51"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:08:51"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:08:51"}
+{"duration":"6ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 16:09:16","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36","userId":null}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 16:09:16"}
+{"duration":"60ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 16:09:16","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36","userId":null}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 16:09:20"}
+{"duration":"30ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 16:09:20","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36","userId":null}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 16:10:06"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:10:32"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:10:32"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:10:33"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:10:33"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:10:33"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:10:33"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 16:10:50"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:11:16"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:11:16"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:11:16"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:11:16"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:11:16"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:11:16"}
+{"duration":"4ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 16:11:55","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36","userId":null}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 16:11:55"}
+{"duration":"46ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 16:11:55","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36","userId":null}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 16:12:41"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:13:17"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:13:17"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:13:17"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:13:17"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:13:17"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:13:17"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 16:13:43"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:13:59"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:13:59"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:13:59"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:13:59"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:13:59"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:13:59"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:14:31"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:14:31"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:14:31"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:14:31"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:14:31"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:14:31"}
+{"duration":"5ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 16:15:09","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:112:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 16:15:09"}
+{"duration":"57ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 16:15:09","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 16:16:21"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:21:01"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:21:01"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:21:01"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:21:01"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:21:01"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:21:01"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 16:21:34"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:22:06"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:22:06"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:22:06"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:22:06"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:22:06"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:22:06"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 16:22:44"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:23:08"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:23:08"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:23:08"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:23:08"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:23:08"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:23:08"}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:127:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 16:23:23"}
+{"duration":"62ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 16:23:23","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.5074","userId":null}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:24:35"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:24:35"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:24:35"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:24:35"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:24:35"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:24:35"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 16:31:56"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:32:20"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:32:20"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:32:20"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:32:20"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:32:20"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:32:20"}
+{"level":"error","message":"Login error: Illegal arguments: string, undefined","service":"toollink-backend","stack":"Error: Illegal arguments: string, undefined\n    at _async (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:286:46)\n    at E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:307:17\n    at new Promise (<anonymous>)\n    at bcrypt.compare (E:\\toollink 2\\toollink2\\ToolinkBackend\\node_modules\\bcryptjs\\dist\\bcrypt.js:306:20)\n    at userSchema.methods.comparePassword (file:///E:/toollink%202/toollink2/ToolinkBackend/src/models/User.js:204:25)\n    at file:///E:/toollink%202/toollink2/ToolinkBackend/src/routes/auth.js:127:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)","timestamp":"2025-09-13 16:32:36"}
+{"duration":"49ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":500,"timestamp":"2025-09-13 16:32:36","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.5074","userId":null}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:33:29"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:33:29"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:33:29"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:33:29"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:33:29"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:33:29"}
+{"level":"info","message":"User admin@toollink.com logged in successfully","service":"toollink-backend","timestamp":"2025-09-13 16:33:45"}
+{"duration":"441ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":200,"timestamp":"2025-09-13 16:33:45","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.5074","userId":null}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 16:33:57","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"User admin@toollink.com logged in successfully","service":"toollink-backend","timestamp":"2025-09-13 16:33:57"}
+{"duration":"322ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":200,"timestamp":"2025-09-13 16:33:57","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 16:34:54"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 16:34:54"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 16:34:54"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 16:34:54"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 16:34:54"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 16:34:54"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:00:38"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:00:38"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:00:38"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:00:38"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:00:38"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:00:38"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:01:00"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:03:31"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:03:31"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:03:31"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:03:31"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:03:31"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:03:31"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:03:43"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:05:05"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:05:05"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:05:05"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:05:05"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:05:05"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:05:05"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:05:20"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:05:55"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:05:55"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:05:55"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:05:55"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:05:55"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:05:55"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:06:07"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:06:46"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:06:46"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:06:46"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:06:46"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:06:46"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:06:46"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:06:57"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:07:28"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:07:28"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:07:28"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:07:28"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:07:28"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:07:28"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:07:39"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:08:19"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:08:19"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:08:19"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:08:19"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:08:19"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:08:19"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:08:29"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:09:38"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:09:38"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:09:38"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:09:38"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:09:38"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:09:38"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:09:49"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:11:01"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:11:01"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:11:01"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:11:01"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:11:01"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:11:01"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:11:15"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:12:35"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:12:35"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:12:35"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:12:35"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:12:35"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:12:35"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:13:05"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:13:48"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:13:48"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:13:48"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:13:48"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:13:48"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:13:48"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:14:19"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:15:05"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:15:05"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:15:05"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:15:05"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:15:05"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:15:05"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:15:35"}
+{"level":"info","message":"Database connection closed","service":"toollink-backend","timestamp":"2025-09-13 17:15:35"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:16:06"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:16:06"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:16:06"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:16:06"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:16:06"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:16:06"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 17:16:30"}
+{"level":"info","message":"Database connection closed","service":"toollink-backend","timestamp":"2025-09-13 17:16:30"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:18:14"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:18:14"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:18:14"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 17:18:14"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:18:14"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:18:14"}
+{"duration":"4ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:38","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"User admin@toollink.com logged in successfully","service":"toollink-backend","timestamp":"2025-09-13 17:18:38"}
+{"duration":"387ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:38","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"3ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:38","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:38"}
+{"duration":"41ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:38","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:38"}
+{"duration":"20ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:38","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:39"}
+{"duration":"18ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:39","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:39"}
+{"duration":"24ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:39","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:39"}
+{"duration":"17ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:39","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"4ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:44","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:44","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:44"}
+{"duration":"29ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:44","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:44"}
+{"duration":"20ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:44","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:46","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:46","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"11ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:46","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"8ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:46","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:48"}
+{"duration":"17ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:48","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:48"}
+{"duration":"16ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:48","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:52","url":"/api/auth/logout","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"57ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:52","url":"/api/auth/logout","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:56","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"User admin@toollink.com logged in successfully","service":"toollink-backend","timestamp":"2025-09-13 17:18:56"}
+{"duration":"316ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:56","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"3ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:56","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:56","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:56","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:56","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:56","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:56"}
+{"duration":"17ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:56","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:56"}
+{"duration":"15ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:56","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:56"}
+{"duration":"16ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:56","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:56"}
+{"duration":"16ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:56","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:56"}
+{"duration":"16ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:56","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:59","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"3ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:18:59","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:59"}
+{"duration":"23ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:59","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:18:59"}
+{"duration":"24ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:18:59","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:19:03","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:19:03","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"10ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:19:03","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"7ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:19:03","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:19:03"}
+{"duration":"18ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:19:03","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:19:03"}
+{"duration":"17ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:19:03","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"8ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:19:05","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"9ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:19:05","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:19:12","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:19:12","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:19:12"}
+{"duration":"23ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:19:12","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:19:12"}
+{"duration":"19ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:19:12","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:19:14","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:19:14","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"7ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:19:14","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"8ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:19:14","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:19:17","url":"/api/auth/logout","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"50ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:19:17","url":"/api/auth/logout","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:51:26"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:51:26"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:51:27"}
+{"level":"info","message":"Server running on port 5000","service":"toollink-backend","timestamp":"2025-09-13 17:51:27"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:51:27"}
+{"level":"info","message":"API Documentation: http://localhost:5000/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:51:27"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:52:23"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:52:23"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:52:23"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 17:52:23"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:52:23"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:52:23"}
+{"duration":"4ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:52:25","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"User admin@toollink.com logged in successfully","service":"toollink-backend","timestamp":"2025-09-13 17:52:25"}
+{"duration":"310ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:52:25","url":"/api/auth/login","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"4ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:52:25","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:52:25"}
+{"duration":"31ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:25","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:52:25"}
+{"duration":"21ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:25","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:52:25"}
+{"duration":"18ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:25","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:52:25"}
+{"duration":"20ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:25","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Unread notifications count: 7 for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:52:26"}
+{"duration":"18ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:26","url":"/api/notifications/unread-count","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:52:28","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"2ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:52:28","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:52:28"}
+{"duration":"21ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:28","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:52:28"}
+{"duration":"22ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:28","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:52:29","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:52:29","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"14ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:52:29","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"10ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:29","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:52:30"}
+{"duration":"20ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:30","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:52:30"}
+{"duration":"21ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:30","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:52:41","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:52:41","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"10ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:41","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"10ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:41","url":"/api/users/profile","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:52:41","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"OPTIONS","service":"toollink-backend","status":200,"timestamp":"2025-09-13 17:52:41","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":null}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:52:41"}
+{"duration":"20ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:41","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Fetched 7 real notifications for user 6883239bc1f0c1ffb8f0bf17","service":"toollink-backend","timestamp":"2025-09-13 17:52:41"}
+{"duration":"21ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":304,"timestamp":"2025-09-13 17:52:41","url":"/api/notifications?","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","userId":"6883239bc1f0c1ffb8f0bf17"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 17:52:49"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 17:52:49"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 17:52:49"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 17:52:49"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 17:52:49"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 17:52:49"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 18:35:42"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 18:35:42"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 18:35:42"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 18:35:42"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 18:35:42"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 18:35:42"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 18:37:20"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 18:39:54"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 18:39:54"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 18:39:54"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 18:39:54"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 18:39:54"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 18:39:54"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 18:40:18"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 18:40:39"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 18:40:39"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 18:40:39"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 18:40:39"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 18:40:39"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 18:40:39"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 18:43:45"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 18:44:00"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 18:44:00"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 18:44:00"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 18:44:00"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 18:44:00"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 18:44:00"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 18:48:14"}
+{"level":"info","message":"Database connection closed","service":"toollink-backend","timestamp":"2025-09-13 18:48:14"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 18:51:37"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 18:51:37"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 18:51:37"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 18:51:37"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 18:51:37"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 18:51:37"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 18:52:41"}
+{"level":"info","message":"Database connection closed","service":"toollink-backend","timestamp":"2025-09-13 18:52:41"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 18:53:07"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 18:53:07"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 18:53:07"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 18:53:07"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 18:53:07"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 18:53:07"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"toollink-backend","timestamp":"2025-09-13 18:53:25"}
+{"level":"info","message":"Database connection closed","service":"toollink-backend","timestamp":"2025-09-13 18:53:25"}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 18:54:04"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 18:54:04"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 18:54:04"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 18:54:04"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 18:54:04"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 18:54:04"}
+{"duration":"4ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 18:54:36","url":"/health","userAgent":"axios/1.12.1","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 18:54:36","url":"/api/docs","userAgent":"axios/1.12.1","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 18:56:52","url":"/health","userAgent":"axios/1.12.1","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 18:56:52","url":"/api/docs","userAgent":"axios/1.12.1","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 18:59:37","url":"/health","userAgent":"axios/1.12.1","userId":null}
+{"duration":"0ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 18:59:37","url":"/api/docs","userAgent":"axios/1.12.1","userId":null}
+{"duration":"18ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":400,"timestamp":"2025-09-13 18:59:37","url":"/api/auth/login","userAgent":"axios/1.12.1","userId":null}
+{"level":"info","message":"User admin@toollink.com logged in successfully","service":"toollink-backend","timestamp":"2025-09-13 18:59:37"}
+{"duration":"293ms","ip":"::1","level":"http","message":"HTTP Request","method":"POST","service":"toollink-backend","status":200,"timestamp":"2025-09-13 18:59:37","url":"/api/auth/login","userAgent":"axios/1.12.1","userId":null}
+{"duration":"1ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 19:01:51","url":"/health","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.5074","userId":null}
+{"level":"info","message":"Connected to Local MongoDB successfully","service":"toollink-backend","timestamp":"2025-09-13 19:04:44"}
+{"level":"info","message":"Database: mongodb://localhost:27017/toollink","service":"toollink-backend","timestamp":"2025-09-13 19:04:44"}
+{"level":"info","message":"Admin user already exists","service":"toollink-backend","timestamp":"2025-09-13 19:04:44"}
+{"level":"info","message":"Server running on port 5001","service":"toollink-backend","timestamp":"2025-09-13 19:04:44"}
+{"level":"info","message":"Environment: development","service":"toollink-backend","timestamp":"2025-09-13 19:04:44"}
+{"level":"info","message":"API Documentation: http://localhost:5001/api/docs","service":"toollink-backend","timestamp":"2025-09-13 19:04:44"}
+{"duration":"5ms","ip":"::1","level":"http","message":"HTTP Request","method":"GET","service":"toollink-backend","status":200,"timestamp":"2025-09-13 19:06:10","url":"/health","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.5074","userId":null}

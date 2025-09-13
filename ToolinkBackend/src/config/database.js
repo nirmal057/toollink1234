@@ -72,9 +72,11 @@ class DatabaseConnection {
 
     /**
      * Get MongoDB connection string from environment
+     * FORCED TO USE LOCAL MONGODB ONLY
      */
     getConnectionString() {
-        return process.env.MONGODB_URI || process.env.DATABASE_URL || 'mongodb://localhost:27017/toollink';
+        // Force local MongoDB only - ignore any Atlas configurations
+        return 'mongodb://localhost:27017/toollink';
     }
 
     /**
