@@ -22,7 +22,8 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        minlength: 6
+        minlength: 6,
+        select: false  // Don't include password in queries by default
     },
     fullName: {
         type: String,
@@ -38,15 +39,13 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: [
-            'admin',           // Full system access
-            'warehouse',       // Warehouse management
-            'cashier',         // Point of sale operations
-            'customer',        // Customer access
-            'driver',          // Delivery operations
-            'editor',          // Content management
-            'user'             // General user access
+            'ADMIN',           // Full system access
+            'WAREHOUSE_MANAGER', // Warehouse management
+            'CASHIER',         // Point of sale operations
+            'EDITOR',          // Content management
+            'CUSTOMER'         // Customer access
         ],
-        default: 'customer'
+        default: 'CUSTOMER'
     },
     isActive: {
         type: Boolean,

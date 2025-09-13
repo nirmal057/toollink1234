@@ -1,46 +1,47 @@
 import mongoose from 'mongoose';
 
 const notificationSchema = new mongoose.Schema({
-    userId: {
+    toRole: {
+        type: String,
+        enum: ['ADMIN', 'WAREHOUSE_MANAGER', 'CASHIER', 'EDITOR', 'CUSTOMER']
+    },
+    toUserId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        default: null // null for system-wide notifications
+        ref: 'User'
     },
     type: {
         type: String,
-        enum: ['system', 'inventory', 'order', 'delivery', 'payment', 'user', 'security'],
+        enum: ['LOW_STOCK', 'UPCOMING_DELIVERY', 'DELIVERY_DELAYED', 'ORDER_STATUS_CHANGE', 'MATERIAL_REFILL_NEEDED', 'SYSTEM'],
         required: true
-    },
-    title: {
-        type: String,
-        required: true,
-        maxlength: 200
     },
     message: {
         type: String,
         required: true,
         maxlength: 1000
     },
-    priority: {
-        type: String,
-        enum: ['low', 'medium', 'high', 'urgent'],
-        default: 'medium'
-    },
+    meta: mongoose.Schema.Types.Mixed, // Additional data related to notification
     read: {
         type: Boolean,
         default: false
     },
     readAt: Date,
-    metadata: mongoose.Schema.Types.Mixed, // Additional data related to notification
     expiresAt: Date
 }, {
     timestamps: true
 });
 
 // Indexes
-notificationSchema.index({ userId: 1, read: 1 });
-notificationSchema.index({ type: 1, priority: 1 });
+notificationSchema.index({ toUserId: 1, read: 1, createdAt: -1 });
+notificationSchema.index({ toRole: 1, read: 1, createdAt: -1 });
+notificationSchema.index({ type: 1, createdAt: -1 });
 notificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+// Instance method to mark as read
+notificationSchema.methods.markAsRead = function() {
+    this.read = true;
+    this.readAt = new Date();
+    return this.save();
+};
 
 const Notification = mongoose.model('Notification', notificationSchema);
 

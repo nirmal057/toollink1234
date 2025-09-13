@@ -1,62 +1,91 @@
 import mongoose from 'mongoose';
 
 const feedbackSchema = new mongoose.Schema({
-    userId: {
+    mainOrderId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'MainOrder',
         required: true
     },
-    orderId: {
+    subOrderId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Order'
+        ref: 'SubOrder'
     },
-    type: {
-        type: String,
-        enum: ['product', 'service', 'delivery', 'general', 'complaint', 'suggestion'],
+    byUserId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
     rating: {
         type: Number,
         min: 1,
-        max: 5
+        max: 5,
+        required: true
     },
-    subject: {
+    comment: {
         type: String,
-        required: true,
-        maxlength: 200
+        trim: true,
+        maxlength: 1000
     },
-    message: {
+    photoUrl: {
         type: String,
-        required: true,
-        maxlength: 2000
+        trim: true
     },
-    status: {
+    category: {
         type: String,
-        enum: ['pending', 'in_review', 'resolved', 'closed'],
-        default: 'pending'
+        enum: ['delivery', 'quality', 'service', 'other'],
+        default: 'other'
+    },
+    isPublic: {
+        type: Boolean,
+        default: true
     },
     response: {
-        message: String,
-        respondedBy: {
+        text: String,
+        byUserId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User'
         },
-        respondedAt: Date
-    },
-    priority: {
-        type: String,
-        enum: ['low', 'medium', 'high', 'urgent'],
-        default: 'medium'
-    },
-    category: String,
-    attachments: [String] // File URLs
+        at: Date
+    }
 }, {
     timestamps: true
 });
 
-// Indexes
-feedbackSchema.index({ userId: 1, type: 1 });
-feedbackSchema.index({ status: 1, priority: 1 });
+// Indexes for efficient querying
+feedbackSchema.index({ mainOrderId: 1, createdAt: -1 });
+feedbackSchema.index({ subOrderId: 1, createdAt: -1 });
+feedbackSchema.index({ byUserId: 1, createdAt: -1 });
+feedbackSchema.index({ rating: 1, category: 1 });
+
+// Static method to get average rating
+feedbackSchema.statics.getAverageRating = async function(filter = {}) {
+    const result = await this.aggregate([
+        { $match: filter },
+        {
+            $group: {
+                _id: null,
+                averageRating: { $avg: '$rating' },
+                totalFeedbacks: { $sum: 1 }
+            }
+        }
+    ]);
+    
+    return result.length > 0 ? result[0] : { averageRating: 0, totalFeedbacks: 0 };
+};
+
+// Static method to get rating distribution
+feedbackSchema.statics.getRatingDistribution = async function(filter = {}) {
+    return this.aggregate([
+        { $match: filter },
+        {
+            $group: {
+                _id: '$rating',
+                count: { $sum: 1 }
+            }
+        },
+        { $sort: { _id: 1 } }
+    ]);
+};
 
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 
