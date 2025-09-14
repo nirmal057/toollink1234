@@ -14,14 +14,14 @@ async function connectDB() {
 
 async function resetDrivers() {
     await connectDB();
-    
+
     try {
         console.log('🗑️ Removing existing drivers...');
         await User.deleteMany({ role: 'driver' });
         console.log('✅ Existing drivers removed');
-        
+
         console.log('➕ Creating new sample drivers...');
-        
+
         // Create driver 1
         const driver1 = new User({
             username: 'driver1',
@@ -41,10 +41,10 @@ async function resetDrivers() {
             isActive: true,
             emailVerified: true
         });
-        
+
         await driver1.save();
         console.log('✅ Driver 1 created: John Driver');
-        
+
         // Create driver 2
         const driver2 = new User({
             username: 'driver2',
@@ -64,10 +64,10 @@ async function resetDrivers() {
             isActive: true,
             emailVerified: true
         });
-        
+
         await driver2.save();
         console.log('✅ Driver 2 created: Jane Smith');
-        
+
         // Create driver 3
         const driver3 = new User({
             username: 'driver3',
@@ -87,14 +87,14 @@ async function resetDrivers() {
             isActive: true,
             emailVerified: true
         });
-        
+
         await driver3.save();
         console.log('✅ Driver 3 created: Mike Wilson');
-        
+
         // Verify creation
         const allDrivers = await User.find({ role: 'driver' }).select('-password');
         console.log(`\n📊 Total drivers created: ${allDrivers.length}`);
-        
+
         allDrivers.forEach((driver, index) => {
             console.log(`\n${index + 1}. ${driver.fullName}`);
             console.log(`   📧 Email: ${driver.email}`);
@@ -105,7 +105,7 @@ async function resetDrivers() {
             console.log(`   ⚖️ Capacity: ${driver.vehicleInfo?.capacity}`);
             console.log(`   ⭐ Rating: ${driver.rating}/5`);
         });
-        
+
     } catch (error) {
         console.error('❌ Error resetting drivers:', error);
     } finally {

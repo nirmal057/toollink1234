@@ -15,21 +15,21 @@ async function connectDB() {
 
 async function testDriverData() {
     await connectDB();
-    
+
     try {
         console.log('🔍 Checking driver data in database...\n');
-        
+
         // Get all users with driver role
         const drivers = await User.find({ role: 'driver' })
             .select('-password')
             .sort({ createdAt: -1 });
-            
+
         console.log(`📊 Found ${drivers.length} drivers in database:`);
-        
+
         if (drivers.length === 0) {
             console.log('❌ No drivers found in database');
             console.log('💡 Let me create a sample driver for testing...');
-            
+
             // Create a sample driver
             const sampleDriver = new User({
                 username: 'driver1',
@@ -48,10 +48,10 @@ async function testDriverData() {
                 isActive: true,
                 emailVerified: true
             });
-            
+
             await sampleDriver.save();
             console.log('✅ Sample driver created successfully!');
-            
+
             // Also create one more
             const sampleDriver2 = new User({
                 username: 'driver2',
@@ -70,15 +70,15 @@ async function testDriverData() {
                 isActive: true,
                 emailVerified: true
             });
-            
+
             await sampleDriver2.save();
             console.log('✅ Second sample driver created successfully!');
-            
+
             // Now get the updated list
             const updatedDrivers = await User.find({ role: 'driver' })
                 .select('-password')
                 .sort({ createdAt: -1 });
-                
+
             console.log(`\n📊 Now have ${updatedDrivers.length} drivers in database:`);
             updatedDrivers.forEach((driver, index) => {
                 console.log(`\n${index + 1}. Driver: ${driver.fullName}`);
@@ -103,17 +103,17 @@ async function testDriverData() {
                 console.log(`   ✅ Active: ${driver.isActive ? 'Yes' : 'No'}`);
             });
         }
-        
+
         // Check deliveries collection
         console.log('\n🚚 Checking deliveries in database...');
         const deliveryCount = await Delivery.countDocuments({});
         console.log(`📦 Found ${deliveryCount} deliveries in database`);
-        
+
         if (deliveryCount === 0) {
             console.log('❌ No deliveries found in database');
             console.log('💡 Note: Deliveries are usually created when orders are processed');
         }
-        
+
     } catch (error) {
         console.error('❌ Error checking driver data:', error);
     } finally {

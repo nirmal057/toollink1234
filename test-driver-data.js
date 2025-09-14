@@ -15,17 +15,17 @@ async function connectDB() {
 
 async function testDriverData() {
     await connectDB();
-    
+
     try {
         console.log('🔍 Checking driver data in database...\n');
-        
+
         // Get all users with driver role
         const drivers = await User.find({ role: 'driver' })
             .select('-password')
             .sort({ createdAt: -1 });
-            
+
         console.log(`📊 Found ${drivers.length} drivers in database:`);
-        
+
         if (drivers.length === 0) {
             console.log('❌ No drivers found in database');
             console.log('💡 You need to add some drivers first');
@@ -40,7 +40,7 @@ async function testDriverData() {
                 console.log(`   ✅ Active: ${driver.isActive ? 'Yes' : 'No'}`);
             });
         }
-        
+
         // Check deliveries collection
         console.log('\n🚚 Checking deliveries in database...');
         const deliveries = await Delivery.find({})
@@ -48,9 +48,9 @@ async function testDriverData() {
             .populate('orderId', 'orderNumber')
             .sort({ createdAt: -1 })
             .limit(10);
-            
+
         console.log(`📦 Found ${deliveries.length} deliveries in database`);
-        
+
         if (deliveries.length === 0) {
             console.log('❌ No deliveries found in database');
             console.log('💡 You need to create some orders and deliveries first');
@@ -64,7 +64,7 @@ async function testDriverData() {
                 console.log(`   📅 Created: ${delivery.createdAt?.toLocaleDateString() || 'Unknown'}`);
             });
         }
-        
+
         // Test the drivers API endpoint
         console.log('\n🧪 Testing drivers API endpoint...');
         try {
@@ -74,7 +74,7 @@ async function testDriverData() {
                     'Content-Type': 'application/json'
                 }
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 console.log('✅ API Response:', JSON.stringify(data, null, 2));
@@ -86,7 +86,7 @@ async function testDriverData() {
         } catch (apiError) {
             console.error('❌ API Test failed:', apiError.message);
         }
-        
+
     } catch (error) {
         console.error('❌ Error checking driver data:', error);
     } finally {
