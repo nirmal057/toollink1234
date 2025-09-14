@@ -11,6 +11,11 @@ const orderSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    customerEmail: {
+        type: String,
+        required: true,
+        index: true // Add index for faster email-based queries
+    },
     items: [{
         inventory: {
             type: mongoose.Schema.Types.ObjectId,
@@ -286,6 +291,7 @@ orderSchema.statics.searchOrders = async function (query, options = {}) {
     const {
         status,
         customer,
+        customerEmail, // Add customerEmail option
         startDate,
         endDate,
         page = 1,
@@ -309,6 +315,10 @@ orderSchema.statics.searchOrders = async function (query, options = {}) {
 
     if (customer) {
         filter.customer = customer;
+    }
+
+    if (customerEmail) {
+        filter.customerEmail = customerEmail; // Filter by customer email
     }
 
     if (startDate && endDate) {

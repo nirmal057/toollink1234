@@ -38,7 +38,7 @@ router.get('/', async (req, res) => {
 
         // Role-based filtering
         if (req.user.role === 'customer') {
-            options.customer = req.user._id;
+            options.customerEmail = req.user.email; // Filter by customer email instead of ID
         }
 
         const result = await Order.searchOrders(search, options);
