@@ -7,12 +7,12 @@ const checkAdminUser = async () => {
         console.log('Connecting to MongoDB...');
 
         // Find admin user
-        const admin = await User.findOne({
+        const adminUsers = await User.find({
             $or: [
-                { email: 'admin@toollink.com' },
-                { role: 'ADMIN' }
+                { role: 'admin' },
+                { role: 'admin' }
             ]
-        }).select('+password'); // Include password field
+        });
 
         if (admin) {
             console.log('Admin user found:');

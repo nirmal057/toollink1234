@@ -3,10 +3,14 @@ import logger from './logger.js';
 
 export const createDefaultAdmin = async () => {
     try {
-        // Check if admin already exists
-        const adminExists = await User.findOne({ role: 'ADMIN' });
-
-        if (adminExists) {
+        // Check if admin already exists (check both uppercase and lowercase)
+        const adminExists = await User.findOne({
+            $or: [
+                { role: 'admin' },
+                { username: 'admin' },
+                { email: process.env.ADMIN_EMAIL || 'admin@toollink.com' }
+            ]
+        }); if (adminExists) {
             logger.info('Admin user already exists');
             return;
         }
@@ -17,7 +21,7 @@ export const createDefaultAdmin = async () => {
             email: process.env.ADMIN_EMAIL || 'admin@toollink.com',
             password: process.env.ADMIN_PASSWORD || 'admin123',
             fullName: 'System Administrator',
-            role: 'ADMIN',
+            role: 'admin', // Use lowercase
             isActive: true,
             isApproved: true,
             emailVerified: true,

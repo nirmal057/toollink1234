@@ -30,7 +30,7 @@ const createLocalAdmin = async () => {
             console.log('- Password hash exists:', !!existingAdmin.password);
 
             // Fix role case if needed
-            if (existingAdmin.role === 'ADMIN') {
+            if (existingAdmin.role === 'admin') {
                 console.log('🔄 Fixing admin role case (ADMIN -> admin)...');
                 await usersCollection.updateOne(
                     { email: 'admin@toollink.com' },

@@ -114,7 +114,7 @@ class OrderService {
                 // If quantity couldn't be fully allocated, create notification
                 if (remainingQty > 0) {
                     await NotificationService.create(
-                        'WAREHOUSE_MANAGER',
+                        'warehouse',
                         null,
                         'MATERIAL_REFILL_NEEDED',
                         `Insufficient stock for ${item.materialId.name}. Short by ${remainingQty} ${item.materialId.unit}`,
@@ -145,7 +145,7 @@ class OrderService {
     async adjustBeforeDispatch(subOrderId, updates, userId, userRole) {
         try {
             // Check role permissions
-            const allowedRoles = ['CASHIER', 'EDITOR', 'ADMIN'];
+            const allowedRoles = ['cashier', 'editor', 'admin'];
             if (!allowedRoles.includes(userRole)) {
                 throw new Error('Insufficient permissions to adjust orders');
             }
@@ -214,7 +214,7 @@ class OrderService {
 
                 // Notify warehouse manager
                 await NotificationService.create(
-                    'WAREHOUSE_MANAGER',
+                    'warehouse',
                     null,
                     'ORDER_STATUS_CHANGE',
                     `Sub-order ${subOrder.subOrderNumber} has been adjusted`,

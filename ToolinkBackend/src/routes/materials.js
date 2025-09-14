@@ -24,11 +24,11 @@ const materialValidation = [
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const { category, search, page = 1, limit = 50, active = 'true' } = req.query;
-        
+
         const query = {};
         if (active === 'true') query.isActive = true;
         if (category && category !== 'all') query.category = category;
-        
+
         if (search) {
             query.$or = [
                 { name: { $regex: search, $options: 'i' } },
@@ -96,7 +96,7 @@ router.get('/categories', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const material = await Material.findById(req.params.id);
-        
+
         if (!material) {
             return res.status(404).json({
                 success: false,
@@ -117,10 +117,10 @@ router.get('/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// POST /api/materials - Create new material (ADMIN, WAREHOUSE_MANAGER, EDITOR)
-router.post('/', 
-    authenticateToken, 
-    requireRole(['ADMIN', 'WAREHOUSE_MANAGER', 'EDITOR']),
+// POST /api/materials - Create new material (admin, warehouse, editor)
+router.post('/',
+    authenticateToken,
+    requireRole(['admin', 'warehouse', 'editor']),
     materialValidation,
     async (req, res) => {
         try {
@@ -135,7 +135,7 @@ router.post('/',
 
             // Check for duplicate SKU if provided
             if (req.body.sku) {
-                const existingSku = await Material.findOne({ 
+                const existingSku = await Material.findOne({
                     sku: req.body.sku.toUpperCase(),
                     _id: { $ne: req.params.id }
                 });
@@ -165,10 +165,10 @@ router.post('/',
     }
 );
 
-// PUT /api/materials/:id - Update material (ADMIN, WAREHOUSE_MANAGER, EDITOR)
+// PUT /api/materials/:id - Update material (admin, warehouse, editor)
 router.put('/:id',
     authenticateToken,
-    requireRole(['ADMIN', 'WAREHOUSE_MANAGER', 'EDITOR']),
+    requireRole(['admin', 'warehouse', 'editor']),
     materialValidation,
     async (req, res) => {
         try {
@@ -183,7 +183,7 @@ router.put('/:id',
 
             // Check for duplicate SKU if provided
             if (req.body.sku) {
-                const existingSku = await Material.findOne({ 
+                const existingSku = await Material.findOne({
                     sku: req.body.sku.toUpperCase(),
                     _id: { $ne: req.params.id }
                 });
@@ -223,10 +223,10 @@ router.put('/:id',
     }
 );
 
-// DELETE /api/materials/:id - Soft delete material (ADMIN only)
+// DELETE /api/materials/:id - Soft delete material (admin only)
 router.delete('/:id',
     authenticateToken,
-    requireRole(['ADMIN']),
+    requireRole(['admin']),
     async (req, res) => {
         try {
             const material = await Material.findByIdAndUpdate(
