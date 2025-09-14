@@ -28,6 +28,16 @@ const createLocalAdmin = async () => {
             console.log('- Email:', existingAdmin.email);
             console.log('- Role:', existingAdmin.role);
             console.log('- Password hash exists:', !!existingAdmin.password);
+            
+            // Fix role case if needed
+            if (existingAdmin.role === 'ADMIN') {
+                console.log('🔄 Fixing admin role case (ADMIN -> admin)...');
+                await usersCollection.updateOne(
+                    { email: 'admin@toollink.com' },
+                    { $set: { role: 'admin' } }
+                );
+                console.log('✅ Admin role updated to lowercase');
+            }
         } else {
             console.log('🔄 Creating admin user...');
 
@@ -41,7 +51,7 @@ const createLocalAdmin = async () => {
                 email: 'admin@toollink.com',
                 password: hashedPassword,
                 fullName: 'System Administrator',
-                role: 'ADMIN',
+                role: 'admin',
                 isActive: true,
                 isApproved: true,
                 emailVerified: true,
