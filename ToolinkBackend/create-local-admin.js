@@ -28,7 +28,7 @@ const createLocalAdmin = async () => {
             console.log('- Email:', existingAdmin.email);
             console.log('- Role:', existingAdmin.role);
             console.log('- Password hash exists:', !!existingAdmin.password);
-            
+
             // Fix role case if needed
             if (existingAdmin.role === 'ADMIN') {
                 console.log('🔄 Fixing admin role case (ADMIN -> admin)...');
