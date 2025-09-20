@@ -9,7 +9,11 @@ const router = express.Router();
 // Validation rules
 const inventoryValidation = [
     body('name').trim().isLength({ min: 1, max: 100 }).withMessage('Name is required and must be less than 100 characters'),
-    body('category').isIn(['Tools', 'Hardware', 'Materials', 'Equipment', 'Safety', 'Electrical', 'Plumbing', 'Other']).withMessage('Invalid category'),
+    body('category').isIn([
+        'Cement', 'Steel & Reinforcement', 'Paint & Chemicals', 'Electrical Items', 'Plumbing Supplies',
+        'Tools & Equipment', 'Hardware & Fasteners', 'Tiles & Ceramics', 'Roofing Materials',
+        'Safety Equipment', 'Sand & Aggregate', 'Bricks', 'Masonry Blocks', 'Stones', 'Materials'
+    ]).withMessage('Invalid category'),
     body('quantity').isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer'),
     body('unit').isIn(['pieces', 'kg', 'liters', 'meters', 'boxes', 'sets', 'pairs', 'rolls', 'sheets', 'units']).withMessage('Invalid unit'),
     body('threshold').isInt({ min: 0 }).withMessage('Threshold must be a non-negative integer'),

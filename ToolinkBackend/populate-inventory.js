@@ -533,7 +533,7 @@ const inventoryData = [
     {
         name: 'Hollow Blocks',
         description: 'Concrete hollow blocks for walls',
-        category: 'Bricks',
+        category: 'Masonry Blocks',
         sku: 'BRK-HLW-CON',
         quantity: 3000,
         current_stock: 3000,

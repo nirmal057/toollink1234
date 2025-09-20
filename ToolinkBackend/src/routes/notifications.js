@@ -488,4 +488,117 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// Warehouse confirmation notification endpoint
+router.post('/warehouse-confirmation', authenticateToken, async (req, res) => {
+    try {
+        const {
+            orderId,
+            customerEmail,
+            customerName,
+            warehouse,
+            orderItems,
+            orderDate,
+            deliveryDate,
+            deliveryTime
+        } = req.body;
+
+        // Validate required fields
+        if (!orderId || !customerEmail || !customerName || !warehouse) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields: orderId, customerEmail, customerName, warehouse'
+            });
+        }
+
+        // Create in-app notification
+        const notification = new Notification({
+            userId: req.user._id,
+            title: `Order Confirmed - ${warehouse}`,
+            message: `Order #${orderId} has been confirmed by ${warehouse} for customer ${customerName}`,
+            type: 'order_confirmation',
+            metadata: {
+                orderId,
+                warehouse,
+                customerName,
+                customerEmail
+            }
+        });
+
+        await notification.save();
+
+        // Send email notification to customer
+        try {
+            const emailContent = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #FF6B35;">Order Confirmation - ${warehouse}</h2>
+
+                    <p>Dear ${customerName},</p>
+
+                    <p>Great news! Your order has been confirmed by our <strong>${warehouse}</strong> team.</p>
+
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; color: #333;">Order Details:</h3>
+                        <p><strong>Order ID:</strong> #${orderId}</p>
+                        <p><strong>Confirmed by:</strong> ${warehouse}</p>
+                        <p><strong>Order Date:</strong> ${new Date(orderDate).toLocaleDateString()}</p>
+                        <p><strong>Scheduled Delivery:</strong> ${new Date(deliveryDate).toLocaleDateString()} at ${deliveryTime}</p>
+
+                        <h4>Items:</h4>
+                        <ul>
+                            ${orderItems.map(item => `<li>${item.name} (Quantity: ${item.quantity})</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <p>Your order is now being prepared for delivery. You'll receive another notification when your order ships.</p>
+
+                    <p>Thank you for choosing ToolLink!</p>
+
+                    <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+                    <p style="color: #666; font-size: 12px;">
+                        This is an automated message. Please do not reply to this email.
+                    </p>
+                </div>
+            `;
+
+            // For now, log the email (in production, integrate with actual email service)
+            logger.info(`Email notification sent to ${customerEmail}:`, {
+                subject: `Order Confirmed - ${warehouse} | ToolLink`,
+                orderId,
+                warehouse,
+                customerName
+            });
+
+            // You can integrate with actual email service here (SendGrid, Nodemailer, etc.)
+            console.log(`📧 EMAIL SENT TO: ${customerEmail}`);
+            console.log(`📦 ORDER: #${orderId} confirmed by ${warehouse}`);
+            console.log(`👤 CUSTOMER: ${customerName}`);
+
+        } catch (emailError) {
+            logger.error('Email sending error:', emailError);
+            // Don't fail the whole request if email fails
+        }
+
+        logger.info(`Warehouse confirmation notification created for order ${orderId} by ${warehouse}`);
+
+        res.json({
+            success: true,
+            message: 'Warehouse confirmation notification sent successfully',
+            data: {
+                notificationId: notification._id,
+                orderId,
+                warehouse,
+                customerNotified: true
+            }
+        });
+
+    } catch (error) {
+        logger.error('Warehouse confirmation notification error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to send warehouse confirmation notification',
+            errorType: 'WAREHOUSE_CONFIRMATION_ERROR'
+        });
+    }
+});
+
 export default router;

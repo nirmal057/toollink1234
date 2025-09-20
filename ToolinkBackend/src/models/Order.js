@@ -310,7 +310,13 @@ orderSchema.statics.searchOrders = async function (query, options = {}) {
     }
 
     if (status) {
-        filter.status = status;
+        if (Array.isArray(status)) {
+            filter.status = { $in: status };
+        } else if (typeof status === 'string' && status.includes(',')) {
+            filter.status = { $in: status.split(',').map(s => s.trim()) };
+        } else {
+            filter.status = status;
+        }
     }
 
     if (customer) {
