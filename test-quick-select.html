@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Select Test - ToolLink</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .quick-item {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-item:hover {
+            background: #e9f7ef;
+            border-color: #28a745;
+        }
+
+        .form-section {
+            margin: 20px 0;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+        }
+
+        .form-field {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .category-info {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Quick Select Test - ToolLink Inventory</h1>
+
+    <div class="test-container">
+        <h2>📋 Test Instructions</h2>
+        <p>Click on any Quick Select item below and verify:</p>
+        <ol>
+            <li><strong>Storage Location</strong> updates to the correct warehouse</li>
+            <li><strong>Category dropdown</strong> shows only relevant categories for that warehouse</li>
+            <li><strong>Item details</strong> (name, category, unit) are filled correctly</li>
+        </ol>
+    </div>
+
+    <div class="test-container">
+        <h2>⚡ Quick Select Items</h2>
+        <div id="quickItems"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>📝 Form Preview</h2>
+        <div class="form-section">
+            <div class="form-row">
+                <div class="form-field">
+                    <label>Item Name:</label>
+                    <input type="text" id="itemName" readonly>
+                </div>
+                <div class="form-field">
+                    <label>Unit:</label>
+                    <input type="text" id="itemUnit" readonly>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-field">
+                    <label>Storage Location:</label>
+                    <select id="storageLocation" disabled>
+                        <option value="">Select Storage Location</option>
+                        <option value="warehouse1">Warehouse 1 (River Sand & Soil)</option>
+                        <option value="warehouse2">Warehouse 2 (Bricks & Masonry)</option>
+                        <option value="warehouse3">Warehouse 3 (Metals & Steel)</option>
+                        <option value="main_warehouse">Main Warehouse (Tools & Equipment)</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Category:</label>
+                    <select id="category" disabled>
+                        <option value="">Select Category</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="category-info" id="categoryInfo" style="display: none;">
+                <strong>Available Categories for this Warehouse:</strong>
+                <div id="availableCategories"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quick items data (matches the React component)
+        const QUICK_ITEMS = [
+            { name: 'River Sand', category: 'Sand & Aggregate', unit: 'kg', location: 'Warehouse 1 (River Sand & Soil)', warehouse: 'warehouse1' },
+            { name: 'Red Bricks', category: 'Bricks', unit: 'pieces', location: 'Warehouse 2 (Bricks & Masonry)', warehouse: 'warehouse2' },
+            { name: 'Steel Bars (12mm)', category: 'Steel & Reinforcement', unit: 'pieces', location: 'Warehouse 3 (Metals & Steel)', warehouse: 'warehouse3' },
+            { name: 'Cement Bags', category: 'Cement', unit: 'bags', location: 'Main Warehouse (Tools & Equipment)', warehouse: 'main_warehouse' },
+            { name: 'White Paint', category: 'Paint & Chemicals', unit: 'liters', location: 'Main Warehouse (Tools & Equipment)', warehouse: 'main_warehouse' },
+            { name: 'Electrical Wire', category: 'Electrical Items', unit: 'meters', location: 'Main Warehouse (Tools & Equipment)', warehouse: 'main_warehouse' },
+            { name: 'PVC Pipes', category: 'Plumbing Supplies', unit: 'pieces', location: 'Main Warehouse (Tools & Equipment)', warehouse: 'main_warehouse' },
+            { name: 'Masonry Blocks', category: 'Masonry Blocks', unit: 'pieces', location: 'Warehouse 2 (Bricks & Masonry)', warehouse: 'warehouse2' }
+        ];
+
+        // Warehouse categories (matches the React component)
+        const warehouseCategories = {
+            'warehouse1': ['Sand & Aggregate'],
+            'warehouse2': ['Bricks', 'Masonry Blocks', 'Stones'],
+            'warehouse3': ['Steel & Reinforcement'],
+            'main_warehouse': [
+                'Cement', 'Paint & Chemicals', 'Electrical Items', 'Plumbing Supplies',
+                'Tools & Equipment', 'Hardware & Fasteners', 'Tiles & Ceramics',
+                'Roofing Materials', 'Safety Equipment', 'Materials', 'Other'
+            ]
+        };
+
+        // Populate quick items
+        function renderQuickItems() {
+            const container = document.getElementById('quickItems');
+            container.innerHTML = QUICK_ITEMS.map((item, index) => `
+                <div class="quick-item" onclick="handleQuickSelect(${index})">
+                    <div style="font-weight: bold;">${item.name}</div>
+                    <div style="color: #666; font-size: 12px;">${item.category} • ${item.location}</div>
+                </div>
+            `).join('');
+        }
+
+        // Handle quick select
+        function handleQuickSelect(index) {
+            const item = QUICK_ITEMS[index];
+
+            // Update form fields
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('itemUnit').value = item.unit;
+            document.getElementById('storageLocation').value = item.warehouse;
+
+            // Update categories
+            updateCategories(item.warehouse);
+
+            // Set the selected category
+            document.getElementById('category').value = item.category;
+
+            // Show success feedback
+            showSuccessMessage(item);
+        }
+
+        // Update categories based on warehouse
+        function updateCategories(warehouseKey) {
+            const categorySelect = document.getElementById('category');
+            const categories = warehouseCategories[warehouseKey] || [];
+
+            categorySelect.innerHTML = '<option value="">Select Category</option>' +
+                categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+
+            // Show available categories info
+            const categoryInfo = document.getElementById('categoryInfo');
+            const availableCategories = document.getElementById('availableCategories');
+            categoryInfo.style.display = 'block';
+            availableCategories.innerHTML = categories.join(', ');
+        }
+
+        // Show success message
+        function showSuccessMessage(item) {
+            const categoryInfo = document.getElementById('categoryInfo');
+            categoryInfo.style.background = '#d4edda';
+            categoryInfo.style.borderColor = '#c3e6cb';
+            categoryInfo.innerHTML = `
+                <strong>✅ Quick Select Applied Successfully!</strong><br>
+                <strong>Item:</strong> ${item.name}<br>
+                <strong>Warehouse:</strong> ${item.location}<br>
+                <strong>Category:</strong> ${item.category} (${item.unit})<br>
+                <strong>Available Categories:</strong> ${warehouseCategories[item.warehouse].join(', ')}
+            `;
+
+            setTimeout(() => {
+                categoryInfo.style.background = '#e3f2fd';
+                updateCategories(item.warehouse);
+            }, 3000);
+        }
+
+        // Initialize
+        renderQuickItems();
+    </script>
+</body>
+
+</html>
