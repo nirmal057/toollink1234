@@ -6,6 +6,14 @@ import logger from '../utils/logger.js';
 
 const router = express.Router();
 
+// User to warehouse mapping
+const userWarehouseMap = {
+    'house1@toollink.com': 'warehouse1',  // River sand/soil
+    'house2@toollink.com': 'warehouse2',  // Bricks
+    'house3@toollink.com': 'warehouse3',  // Metals
+    'main_house@toollink.com': 'main_warehouse' // Tools & Equipment
+};
+
 // Validation rules
 const inventoryValidation = [
     body('name').trim().isLength({ min: 1, max: 100 }).withMessage('Name is required and must be less than 100 characters'),
@@ -14,14 +22,15 @@ const inventoryValidation = [
         'Tools & Equipment', 'Hardware & Fasteners', 'Tiles & Ceramics', 'Roofing Materials',
         'Safety Equipment', 'Sand & Aggregate', 'Bricks', 'Masonry Blocks', 'Stones', 'Materials'
     ]).withMessage('Invalid category'),
+    body('warehouse').isIn(['warehouse1', 'warehouse2', 'warehouse3', 'main_warehouse']).withMessage('Invalid warehouse'),
     body('quantity').isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer'),
     body('unit').isIn(['pieces', 'kg', 'liters', 'meters', 'boxes', 'sets', 'pairs', 'rolls', 'sheets', 'units']).withMessage('Invalid unit'),
     body('threshold').isInt({ min: 0 }).withMessage('Threshold must be a non-negative integer'),
     body('location').trim().isLength({ min: 1 }).withMessage('Location is required')
 ];
 
-// Get all inventory items
-router.get('/', async (req, res) => {
+// Get all inventory items with warehouse filtering
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const {
             page = 1,
@@ -34,6 +43,22 @@ router.get('/', async (req, res) => {
             sort = 'name'
         } = req.query;
 
+        // Determine warehouse filter based on user
+        let warehouseFilter = null;
+
+        if (req.user.role !== 'admin') {
+            warehouseFilter = userWarehouseMap[req.user.email];
+
+            // If warehouse user not found in map, deny access
+            if (req.user.role === 'warehouse' && !warehouseFilter) {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Access denied: Warehouse not assigned',
+                    errorType: 'WAREHOUSE_ACCESS_DENIED'
+                });
+            }
+        }
+
         const options = {
             page: parseInt(page),
             limit: parseInt(limit),
@@ -41,7 +66,8 @@ router.get('/', async (req, res) => {
             location,
             status,
             lowStock: lowStock === 'true',
-            sort
+            sort,
+            warehouse: warehouseFilter // Add warehouse filter
         };
 
         const result = await Inventory.searchInventory(search, options);
@@ -50,6 +76,7 @@ router.get('/', async (req, res) => {
             success: true,
             data: result,
             items: result.items,
+            warehouse: warehouseFilter, // Include warehouse info in response
             pagination: {
                 page: result.page,
                 pages: result.pages,
@@ -69,9 +96,25 @@ router.get('/', async (req, res) => {
 });
 
 // Get inventory statistics
-router.get('/stats', async (req, res) => {
+router.get('/stats', authenticateToken, async (req, res) => {
     try {
-        const stats = await Inventory.getStatistics();
+        // Get user information from auth middleware
+        const userEmail = req.user?.email;
+        const userRole = req.user?.role;
+
+        // Determine warehouse filter based on user
+        let warehouseFilter = {};
+        if (userRole === 'warehouse' && userEmail) {
+            const userWarehouse = userWarehouseMap[userEmail];
+            if (userWarehouse) {
+                warehouseFilter = { warehouse: userWarehouse };
+            }
+        }
+        // Admin users see all warehouses (no filter)
+
+        console.log('User:', userEmail, 'Role:', userRole, 'Warehouse Filter:', warehouseFilter);
+
+        const stats = await Inventory.getStatistics(warehouseFilter);
 
         res.json({
             success: true,

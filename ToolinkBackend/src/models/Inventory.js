@@ -34,6 +34,18 @@ const inventorySchema = new mongoose.Schema({
             'Other'
         ]
     },
+    warehouse: {
+        type: String,
+        required: true,
+        trim: true,
+        enum: [
+            'warehouse1',  // River sand/soil
+            'warehouse2',  // Bricks
+            'warehouse3',  // Metals
+            'main_warehouse' // Tools & Equipment
+        ],
+        default: 'main_warehouse'
+    },
     sku: {
         type: String,
         unique: true,
@@ -205,8 +217,11 @@ inventorySchema.pre('save', function (next) {
 });
 
 // Static method to get inventory statistics
-inventorySchema.statics.getStatistics = async function () {
+inventorySchema.statics.getStatistics = async function (filter = {}) {
+    const matchFilter = { ...filter };
+
     const stats = await this.aggregate([
+        { $match: matchFilter },
         {
             $group: {
                 _id: null,
@@ -221,9 +236,9 @@ inventorySchema.statics.getStatistics = async function () {
         }
     ]);
 
-    // Get category distribution
+    // Get category distribution with same filter
     const categoryStats = await this.aggregate([
-        { $match: { status: 'active' } },
+        { $match: { ...matchFilter, status: 'active' } },
         { $group: { _id: '$category', count: { $sum: 1 } } },
         { $sort: { count: -1 } }
     ]);
@@ -262,6 +277,7 @@ inventorySchema.statics.searchInventory = async function (query, options = {}) {
         category,
         status = 'active',
         location,
+        warehouse,
         lowStock = false,
         page = 1,
         limit = 10,
@@ -287,6 +303,11 @@ inventorySchema.statics.searchInventory = async function (query, options = {}) {
 
     if (location) {
         filter.location = { $regex: location, $options: 'i' };
+    }
+
+    // Add warehouse filtering
+    if (warehouse) {
+        filter.warehouse = warehouse;
     }
 
     if (lowStock) {
