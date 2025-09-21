@@ -4,8 +4,10 @@ import { body, validationResult } from 'express-validator';
 import Order from '../models/Order.js';
 import Inventory from '../models/Inventory.js';
 import User from '../models/User.js';
+import Notification from '../models/Notification.js';
 import { authorize, authenticateToken } from '../middleware/auth.js';
 import logger from '../utils/logger.js';
+import { sendEmail } from '../utils/emailService.js';
 
 const router = express.Router();
 
@@ -179,11 +181,35 @@ router.post('/', [
             });
         }
 
-        const { items, shippingAddress, billingAddress, delivery, notes, customerEmail } = req.body;
+        const { items, shippingAddress, billingAddress, delivery, notes, customerEmail, customerName } = req.body;
 
-        // Find or get customer
+        // Find or create customer
         let customer = req.user;
+
+        // If customerEmail is provided and user is not a customer (admin/cashier creating order for someone)
         if (customerEmail && req.user.role !== 'customer') {
+            let foundCustomer = await User.findOne({ email: customerEmail });
+
+            if (!foundCustomer && customerName) {
+                // Create new customer if not found
+                foundCustomer = new User({
+                    fullName: customerName,
+                    email: customerEmail,
+                    role: 'customer',
+                    phone: shippingAddress.phone || '+94',
+                    address: `${shippingAddress.street}, ${shippingAddress.city}`,
+                    password: 'defaultPassword123', // Default password - customer should change it
+                    isActive: true
+                });
+                await foundCustomer.save();
+                logger.info(`New customer created: ${customerName} (${customerEmail})`);
+            }
+
+            if (foundCustomer) {
+                customer = foundCustomer;
+            }
+        } else if (customerEmail && customerEmail !== req.user.email) {
+            // Handle case where logged-in customer is placing order with different email
             const foundCustomer = await User.findOne({ email: customerEmail });
             if (foundCustomer) {
                 customer = foundCustomer;
@@ -231,6 +257,7 @@ router.post('/', [
         // Create order first
         const orderData = {
             customer: customer._id,
+            customerEmail: customer.email, // Store customer email for easy lookup
             items: validatedItems.map(item => ({
                 inventory: item.inventory,
                 quantity: item.quantity,
@@ -244,68 +271,111 @@ router.post('/', [
             billingAddress: billingAddress || shippingAddress,
             delivery,
             notes,
+            // Set status based on user role - customers need approval
+            status: req.user.role === 'customer' ? 'Pending Approval' : (req.body.status || 'pending'),
             createdBy: req.user._id
         };
 
         const order = new Order(orderData);
         await order.save();
 
-        // Update inventory stock (with rollback on failure)
+        // Update inventory stock ONLY if order doesn't need approval (non-customer orders)
+        // For customer orders requiring approval, inventory will be updated upon approval
         const inventoryUpdates = [];
-        try {
-            for (const item of validatedItems) {
-                const result = await Inventory.findByIdAndUpdate(
-                    item.inventory,
-                    {
-                        $inc: {
-                            current_stock: -item.quantity,
-                            quantity: -item.quantity
-                        }
-                    },
-                    { new: true }
-                );
+        if (req.user.role !== 'customer') {
+            try {
+                for (const item of validatedItems) {
+                    const result = await Inventory.findByIdAndUpdate(
+                        item.inventory,
+                        {
+                            $inc: {
+                                current_stock: -item.quantity,
+                                quantity: -item.quantity
+                            }
+                        },
+                        { new: true }
+                    );
 
-                if (!result) {
-                    throw new Error(`Failed to update inventory for ${item.inventoryName}`);
+                    if (!result) {
+                        throw new Error(`Failed to update inventory for ${item.inventoryName}`);
+                    }
+
+                    inventoryUpdates.push({
+                        inventoryId: item.inventory,
+                        quantityDeducted: item.quantity,
+                        name: item.inventoryName
+                    });
+
+                    logger.info(`Inventory updated: ${item.inventoryName} - deducted ${item.quantity}, new stock: ${result.current_stock}`);
+                }
+            } catch (inventoryError) {
+                // Rollback: Delete the order and restore any inventory that was updated
+                await Order.findByIdAndDelete(order._id);
+
+                for (const update of inventoryUpdates) {
+                    await Inventory.findByIdAndUpdate(
+                        update.inventoryId,
+                        {
+                            $inc: {
+                                current_stock: update.quantityDeducted,
+                                quantity: update.quantityDeducted
+                            }
+                        }
+                    );
+                    logger.info(`Inventory restored due to rollback: ${update.name} + ${update.quantityDeducted}`);
                 }
 
-                inventoryUpdates.push({
-                    inventoryId: item.inventory,
-                    quantityDeducted: item.quantity,
-                    name: item.inventoryName
+                logger.error('Order creation failed during inventory update:', inventoryError);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Failed to update inventory. Order has been cancelled.',
+                    errorType: 'INVENTORY_UPDATE_FAILED',
+                    details: inventoryError.message
                 });
-
-                logger.info(`Inventory updated: ${item.inventoryName} - deducted ${item.quantity}, new stock: ${result.current_stock}`);
             }
-        } catch (inventoryError) {
-            // Rollback: Delete the order and restore any inventory that was updated
-            await Order.findByIdAndDelete(order._id);
-
-            for (const update of inventoryUpdates) {
-                await Inventory.findByIdAndUpdate(
-                    update.inventoryId,
-                    {
-                        $inc: {
-                            current_stock: update.quantityDeducted,
-                            quantity: update.quantityDeducted
-                        }
-                    }
-                );
-                logger.info(`Inventory restored due to rollback: ${update.name} + ${update.quantityDeducted}`);
-            }
-
-            logger.error('Order creation failed during inventory update:', inventoryError);
-            return res.status(500).json({
-                success: false,
-                error: 'Failed to update inventory. Order has been cancelled.',
-                errorType: 'INVENTORY_UPDATE_FAILED',
-                details: inventoryError.message
-            });
+        } else {
+            logger.info(`Order created pending approval - inventory not deducted yet: ${order.orderNumber}`);
         }
 
         // Populate order details for response
         await order.populate('customer', 'fullName email phone');
         await order.populate('items.inventory', 'name sku unit category');
+
+        // Send notifications for customer orders requiring approval
+        if (req.user.role === 'customer') {
+            try {
+                // Find all users who can approve orders (admin, warehouse, cashier)
+                const approvers = await User.find({
+                    role: { $in: ['admin', 'warehouse', 'cashier'] },
+                    isActive: true
+                });
+
+                // Create notifications for each approver
+                const notifications = approvers.map(approver => ({
+                    toUserId: approver._id,
+                    toRole: approver.role.toUpperCase(),
+                    type: 'NEW_ORDER_APPROVAL',
+                    message: `New order #${order.orderNumber} from ${order.customer.fullName} requires approval. Total: $${order.totalAmount.toFixed(2)}`,
+                    meta: {
+                        orderId: order._id,
+                        orderNumber: order.orderNumber,
+                        customerName: order.customer.fullName,
+                        customerEmail: order.customer.email,
+                        totalAmount: order.totalAmount,
+                        itemCount: order.items.length,
+                        createdAt: order.createdAt
+                    }
+                }));
+
+                // Save all notifications
+                await Notification.insertMany(notifications);
+
+                logger.info(`Order approval notifications sent for order ${order.orderNumber} to ${approvers.length} approvers`);
+            } catch (notificationError) {
+                // Don't fail the order creation if notifications fail
+                logger.error('Failed to send order approval notifications:', notificationError);
+            }
+        }
 
         logger.info(`Order created successfully: ${order.orderNumber} by ${req.user.fullName} - Total: ${totalAmount}`);
 
@@ -734,6 +804,249 @@ router.get('/customer/:customerId', authorize('admin', 'cashier'), async (req, r
             success: false,
             error: 'Failed to fetch customer orders',
             errorType: 'FETCH_CUSTOMER_ORDERS_ERROR'
+        });
+    }
+});
+
+// Approve order endpoint
+router.patch('/:id/approve', authorize('admin', 'warehouse', 'cashier'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { notes } = req.body;
+
+        const order = await Order.findById(id)
+            .populate('customer', 'fullName email')
+            .populate('items.inventory', 'name');
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                error: 'Order not found'
+            });
+        }
+
+        if (order.status !== 'Pending Approval') {
+            return res.status(400).json({
+                success: false,
+                error: 'Order is not pending approval'
+            });
+        }
+
+        // Check inventory availability before approval
+        const inventoryUpdates = [];
+        for (const item of order.items) {
+            const inventory = await Inventory.findById(item.inventory._id);
+
+            if (!inventory || inventory.status !== 'active') {
+                return res.status(400).json({
+                    success: false,
+                    error: `Item ${inventory ? inventory.name : 'unknown'} is no longer available`
+                });
+            }
+
+            if (inventory.current_stock < item.quantity) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Insufficient stock for ${inventory.name}. Available: ${inventory.current_stock}, Required: ${item.quantity}`
+                });
+            }
+        }
+
+        // Update inventory stock upon approval
+        try {
+            for (const item of order.items) {
+                const result = await Inventory.findByIdAndUpdate(
+                    item.inventory._id,
+                    {
+                        $inc: {
+                            current_stock: -item.quantity,
+                            quantity: -item.quantity
+                        }
+                    },
+                    { new: true }
+                );
+
+                if (!result) {
+                    throw new Error(`Failed to update inventory for ${item.inventory.name}`);
+                }
+
+                inventoryUpdates.push({
+                    inventoryId: item.inventory._id,
+                    quantityDeducted: item.quantity,
+                    name: item.inventory.name
+                });
+
+                logger.info(`Inventory updated on approval: ${item.inventory.name} - deducted ${item.quantity}, new stock: ${result.current_stock}`);
+            }
+        } catch (inventoryError) {
+            // Rollback any inventory updates that succeeded
+            for (const update of inventoryUpdates) {
+                await Inventory.findByIdAndUpdate(
+                    update.inventoryId,
+                    {
+                        $inc: {
+                            current_stock: update.quantityDeducted,
+                            quantity: update.quantityDeducted
+                        }
+                    }
+                );
+                logger.info(`Inventory restored due to approval failure: ${update.name} + ${update.quantityDeducted}`);
+            }
+
+            logger.error('Order approval failed during inventory update:', inventoryError);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to update inventory during approval',
+                details: inventoryError.message
+            });
+        }
+
+        // Update order status to Confirmed
+        order.status = 'Confirmed';
+        order.approvedBy = req.user._id;
+        order.approvedAt = new Date();
+        if (notes) {
+            order.notes = (order.notes || '') + `\nApproved by ${req.user.fullName}: ${notes}`;
+        }
+
+        await order.save();
+
+        // Create notification for customer
+        await Notification.create({
+            toUserId: order.customer._id,
+            type: 'ORDER_STATUS_CHANGE',
+            message: `Your order #${order.orderNumber} has been approved and confirmed by ${req.user.fullName}`,
+            meta: {
+                orderId: order._id,
+                orderNumber: order.orderNumber,
+                previousStatus: 'Pending Approval',
+                newStatus: 'Confirmed',
+                approvedBy: req.user.fullName,
+                approvedAt: order.approvedAt
+            }
+        });
+
+        // Send email confirmation to customer
+        try {
+            await sendEmail({
+                to: order.customer.email,
+                template: 'order-confirmed',
+                data: {
+                    customerName: order.customer.fullName,
+                    orderNumber: order.orderNumber,
+                    orderDate: order.createdAt.toLocaleDateString(),
+                    approvedBy: req.user.fullName,
+                    totalAmount: order.totalAmount.toFixed(2),
+                    items: order.items.map(item => ({
+                        name: item.inventory.name,
+                        quantity: item.quantity
+                    }))
+                }
+            });
+            logger.info(`Order confirmation email sent to ${order.customer.email} for order ${order.orderNumber}`);
+        } catch (emailError) {
+            logger.error('Failed to send order confirmation email:', emailError);
+            // Don't fail the approval if email fails
+        }
+
+        logger.info(`Order ${order.orderNumber} approved by ${req.user.fullName}`);
+
+        res.json({
+            success: true,
+            message: 'Order approved successfully',
+            data: order
+        });
+    } catch (error) {
+        logger.error('Order approval error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to approve order',
+            details: error.message
+        });
+    }
+});
+
+// Reject order endpoint
+router.patch('/:id/reject', authorize('admin', 'warehouse', 'cashier'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { reason } = req.body;
+
+        if (!reason) {
+            return res.status(400).json({
+                success: false,
+                error: 'Rejection reason is required'
+            });
+        }
+
+        const order = await Order.findById(id).populate('customer', 'fullName email').populate('items.inventory', 'name');
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                error: 'Order not found'
+            });
+        }
+
+        if (order.status !== 'Pending Approval') {
+            return res.status(400).json({
+                success: false,
+                error: 'Order is not pending approval'
+            });
+        }
+
+        // Restore inventory stock for rejected order
+        for (const item of order.items) {
+            await Inventory.findByIdAndUpdate(
+                item.inventory._id,
+                {
+                    $inc: {
+                        current_stock: item.quantity,
+                        quantity: item.quantity
+                    }
+                }
+            );
+            logger.info(`Inventory restored for rejected order: ${item.inventory.name} + ${item.quantity}`);
+        }
+
+        // Update order status to Rejected
+        order.status = 'Rejected';
+        order.rejectedBy = req.user._id;
+        order.rejectedAt = new Date();
+        order.rejectionReason = reason;
+        order.notes = (order.notes || '') + `\nRejected by ${req.user.fullName}: ${reason}`;
+
+        await order.save();
+
+        // Create notification for customer
+        await Notification.create({
+            toUserId: order.customer._id,
+            type: 'ORDER_STATUS_CHANGE',
+            message: `Your order #${order.orderNumber} has been rejected by ${req.user.fullName}. Reason: ${reason}`,
+            meta: {
+                orderId: order._id,
+                orderNumber: order.orderNumber,
+                previousStatus: 'Pending Approval',
+                newStatus: 'Rejected',
+                rejectedBy: req.user.fullName,
+                rejectedAt: order.rejectedAt,
+                rejectionReason: reason
+            }
+        });
+
+        logger.info(`Order ${order.orderNumber} rejected by ${req.user.fullName}. Reason: ${reason}`);
+
+        res.json({
+            success: true,
+            message: 'Order rejected successfully',
+            data: order
+        });
+    } catch (error) {
+        logger.error('Order rejection error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to reject order',
+            details: error.message
         });
     }
 });

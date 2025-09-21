@@ -41,7 +41,7 @@ const orderSchema = new mongoose.Schema({
     }],
     status: {
         type: String,
-        enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
+        enum: ['pending', 'Pending Approval', 'Confirmed', 'Rejected', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
         default: 'pending'
     },
     priority: {
@@ -116,6 +116,12 @@ const orderSchema = new mongoose.Schema({
         ref: 'User'
     },
     approvedAt: Date,
+    rejectedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    rejectedAt: Date,
+    rejectionReason: String,
     processedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

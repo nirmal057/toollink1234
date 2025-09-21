@@ -565,6 +565,62 @@ const emailTemplates = {
         </div>
       </div>
     `
+  },
+
+  'order-confirmed': {
+    subject: 'Your ToolLink Order has been Confirmed!',
+    html: (data) => `
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; color: #333;">
+        <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 30px; text-align: center; color: white;">
+          <h1 style="margin: 0; font-size: 28px;">Order Confirmed! 🎉</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px;">Your order is ready for processing</p>
+        </div>
+
+        <div style="padding: 30px; background: white;">
+          <h2 style="color: #333; margin-bottom: 20px;">Hello ${data.customerName}!</h2>
+
+          <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            Great news! Your order <strong>#${data.orderNumber}</strong> has been approved and confirmed by our team.
+          </p>
+
+          <div style="background: #f8f9fa; border-left: 4px solid #28a745; padding: 20px; margin: 25px 0;">
+            <h3 style="margin-top: 0; color: #28a745;">Order Details</h3>
+            <p style="margin: 5px 0;"><strong>Order Number:</strong> #${data.orderNumber}</p>
+            <p style="margin: 5px 0;"><strong>Order Date:</strong> ${data.orderDate}</p>
+            <p style="margin: 5px 0;"><strong>Approved by:</strong> ${data.approvedBy}</p>
+            <p style="margin: 5px 0;"><strong>Total Amount:</strong> Rs. ${data.totalAmount}</p>
+          </div>
+
+          <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 25px 0;">
+            <h4 style="color: #856404; margin-top: 0;">📦 Items Ordered:</h4>
+            <ul style="color: #856404; margin: 10px 0; padding-left: 20px;">
+              ${data.items.map(item => `<li>${item.name} - Quantity: ${item.quantity}</li>`).join('')}
+            </ul>
+          </div>
+
+          <div style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 8px; padding: 20px; margin: 25px 0;">
+            <h4 style="color: #0c5460; margin-top: 0;">📋 What's Next?</h4>
+            <ul style="color: #0c5460; margin: 10px 0; padding-left: 20px;">
+              <li>Your order is now in our fulfillment queue</li>
+              <li>You'll receive delivery updates via notifications</li>
+              <li>Contact us if you have any questions about your order</li>
+            </ul>
+          </div>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <p style="font-size: 16px; margin-bottom: 20px;">
+              Thank you for choosing ToolLink for your tool needs!
+            </p>
+          </div>
+
+        </div>
+
+        <div style="background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px;">
+          <p style="margin: 0;">Questions? Contact us at toollinksrilanka@gmail.com</p>
+          <p style="margin: 5px 0 0 0;">© ${new Date().getFullYear()} ToolLink Sri Lanka. All rights reserved.</p>
+        </div>
+      </div>
+    `
   }
 };
 
