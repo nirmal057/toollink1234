@@ -9,239 +9,167 @@ import User from '../models/User.js';
 
 const router = express.Router();
 
-// Temporary storage for read status (in production, this should be in database)
-const readNotifications = new Set();
-
-// Helper function to create notifications from real data
-const createRealtimeNotifications = async () => {
-    try {
-        // Get recent orders for notifications
-        const recentOrders = await Order.find({
-            createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24 hours
-        })
-            .populate('customer', 'fullName email')
-            .sort({ createdAt: -1 })
-            .limit(10);
-
-        // Get low stock items for notifications
-        const lowStockItems = await Inventory.find({
-            $expr: { $lte: ['$current_stock', '$min_stock_level'] },
-            status: 'active'
-        }).limit(5);
-
-        // Get recent deliveries for notifications
-        const recentDeliveries = await Delivery.find({
-            updatedAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
-        })
-            .populate('orderId', 'orderNumber customer')
-            .populate({
-                path: 'orderId',
-                populate: {
-                    path: 'customer',
-                    select: 'fullName email'
-                }
-            })
-            .sort({ updatedAt: -1 })
-            .limit(10);
-
-        // Get pending users for approval
-        const pendingUsers = await User.find({
-            isApproved: false,
-            createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } // Last 7 days
-        }).limit(5);
-
-        return {
-            recentOrders,
-            lowStockItems,
-            recentDeliveries,
-            pendingUsers
-        };
-    } catch (error) {
-        logger.error('Error creating realtime notifications:', error);
-        return {
-            recentOrders: [],
-            lowStockItems: [],
-            recentDeliveries: [],
-            pendingUsers: []
-        };
-    }
-};
-
-// Transform real data into notification format
-const transformToNotifications = (data, userId = null) => {
-    const notifications = [];
-    let idCounter = 1;
-
-    // Order notifications
-    data.recentOrders.forEach(order => {
-        const notificationId = `order_${order._id}_${idCounter++}`;
-        notifications.push({
-            _id: notificationId,
-            userId: userId,
-            type: 'info',
-            category: 'order',
-            title: 'New Order Received',
-            message: `Order ${order.orderNumber} has been placed by ${order.customer?.fullName || 'Customer'} for Rs. ${order.finalAmount?.toLocaleString() || '0'}`,
-            priority: order.priority || 'normal',
-            status: 'sent',
-            isRead: readNotifications.has(notificationId),
-            createdAt: order.createdAt,
-            recipient: { specific: false },
-            sender: { system: true, name: 'Order System' },
-            isArchived: false,
-            metadata: {
-                orderId: order._id,
-                orderNumber: order.orderNumber,
-                customerName: order.customer?.fullName,
-                amount: order.finalAmount
-            }
-        });
-    });
-
-    // Low stock notifications
-    data.lowStockItems.forEach(item => {
-        const notificationId = `inventory_${item._id}_${idCounter++}`;
-        notifications.push({
-            _id: notificationId,
-            userId: userId,
-            type: 'warning',
-            category: 'inventory',
-            title: 'Low Stock Alert',
-            message: `${item.name} is running low on stock. Current: ${item.current_stock} ${item.unit}, Minimum: ${item.min_stock_level} ${item.unit}`,
-            priority: 'high',
-            status: 'sent',
-            isRead: readNotifications.has(notificationId),
-            createdAt: item.updatedAt || item.createdAt,
-            recipient: { specific: false },
-            sender: { system: true, name: 'Inventory System' },
-            isArchived: false,
-            metadata: {
-                inventoryId: item._id,
-                itemName: item.name,
-                currentStock: item.current_stock,
-                minLevel: item.min_stock_level,
-                sku: item.sku
-            }
-        });
-    });
-
-    // Delivery notifications
-    data.recentDeliveries.forEach(delivery => {
-        const statusMessages = {
-            'scheduled': 'has been scheduled',
-            'in_transit': 'is now in transit',
-            'delivered': 'has been delivered successfully',
-            'failed': 'delivery attempt failed',
-            'cancelled': 'has been cancelled'
-        };
-
-        const notificationId = `delivery_${delivery._id}_${idCounter++}`;
-        notifications.push({
-            _id: notificationId,
-            userId: userId,
-            type: delivery.status === 'delivered' ? 'success' : delivery.status === 'failed' ? 'error' : 'info',
-            category: 'delivery',
-            title: 'Delivery Update',
-            message: `Delivery for order ${delivery.orderId?.orderNumber || 'N/A'} ${statusMessages[delivery.status] || 'status updated'}`,
-            priority: delivery.status === 'failed' ? 'high' : 'normal',
-            status: 'sent',
-            isRead: readNotifications.has(notificationId),
-            createdAt: delivery.updatedAt,
-            recipient: { specific: false },
-            sender: { system: true, name: 'Delivery System' },
-            isArchived: false,
-            metadata: {
-                deliveryId: delivery._id,
-                orderId: delivery.orderId?._id,
-                orderNumber: delivery.orderId?.orderNumber,
-                status: delivery.status,
-                trackingNumber: delivery.trackingNumber
-            }
-        });
-    });
-
-    // User approval notifications
-    data.pendingUsers.forEach(user => {
-        const notificationId = `user_${user._id}_${idCounter++}`;
-        notifications.push({
-            _id: notificationId,
-            userId: userId,
-            type: 'info',
-            category: 'user',
-            title: 'New User Registration',
-            message: `${user.fullName || user.username || 'A new user'} has registered and requires approval`,
-            priority: 'normal',
-            status: 'sent',
-            isRead: readNotifications.has(notificationId),
-            createdAt: user.createdAt,
-            recipient: { specific: false },
-            sender: { system: true, name: 'User System' },
-            isArchived: false,
-            metadata: {
-                userId: user._id,
-                userName: user.fullName,
-                userEmail: user.email,
-                userRole: user.role
-            }
-        });
-    });
-
-    // Sort by creation date (newest first)
-    return notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-};
-
 // Get all notifications for user
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const { category, priority, unreadOnly, page = 1, limit = 20 } = req.query;
 
-        // Get real-time data from database
-        const realData = await createRealtimeNotifications();
-
-        // Transform to notifications format
-        let notifications = transformToNotifications(realData, req.user._id);
+        // Build query for user-specific notifications
+        const query = {
+            $or: [
+                { toUserId: req.user._id }, // Notifications targeted to this specific user
+                { toRole: req.user.role.toUpperCase() } // Notifications targeted to this user's role
+            ]
+        };
 
         // Apply filters
-        if (category) {
-            notifications = notifications.filter(n => n.category === category);
-        }
-
-        if (priority) {
-            notifications = notifications.filter(n => n.priority === priority);
-        }
-
         if (unreadOnly === 'true') {
-            notifications = notifications.filter(n => !n.isRead);
+            query.read = false;
         }
 
-        // Count unread notifications
-        const unreadCount = notifications.filter(n => !n.isRead).length;
+        // Get notifications from database
+        const notifications = await Notification.find(query)
+            .sort({ createdAt: -1 })
+            .skip((parseInt(page) - 1) * parseInt(limit))
+            .limit(parseInt(limit))
+            .populate('toUserId', 'fullName email role')
+            .lean();
 
-        // Pagination
-        const skip = (parseInt(page) - 1) * parseInt(limit);
-        const paginatedNotifications = notifications.slice(skip, skip + parseInt(limit));
-        const totalPages = Math.ceil(notifications.length / parseInt(limit));
+        // Get total count for pagination
+        const totalCount = await Notification.countDocuments(query);
+        const totalPages = Math.ceil(totalCount / parseInt(limit));
 
-        logger.info(`Fetched ${notifications.length} real notifications for user ${req.user._id}`);
+        // Count unread notifications for this user
+        const unreadQuery = {
+            $or: [
+                { toUserId: req.user._id },
+                { toRole: req.user.role.toUpperCase() }
+            ],
+            read: false
+        };
+        const unreadCount = await Notification.countDocuments(unreadQuery);
+
+        // Transform notifications to match expected format
+        const transformedNotifications = notifications.map(notification => ({
+            id: notification._id,
+            title: getNotificationTitle(notification.type),
+            message: notification.message,
+            type: notification.type.toLowerCase(),
+            priority: getNotificationPriority(notification.type),
+            category: getNotificationCategory(notification.type),
+            timestamp: notification.createdAt,
+            isRead: notification.read,
+            metadata: notification.meta || {},
+            userId: notification.toUserId?._id,
+            userRole: notification.toRole
+        }));
+
+        logger.info(`Fetched ${notifications.length} targeted notifications for user ${req.user._id} (${req.user.role})`);
 
         res.json({
             success: true,
-            notifications: paginatedNotifications,
+            notifications: transformedNotifications,
             pagination: {
                 currentPage: parseInt(page),
-                totalPages: totalPages,
-                totalCount: notifications.length,
+                totalPages,
+                totalCount,
                 hasNext: parseInt(page) < totalPages,
                 hasPrev: parseInt(page) > 1
             },
-            unreadCount: unreadCount
+            unreadCount
         });
     } catch (error) {
         logger.error('Get notifications error:', error);
         res.status(500).json({
             success: false,
             error: 'Failed to fetch notifications',
-            errorType: 'FETCH_NOTIFICATIONS_ERROR'
+            details: error.message
+        });
+    }
+});
+
+// Helper functions for notification formatting
+function getNotificationTitle(type) {
+    const titles = {
+        'LOW_STOCK': 'Low Stock Alert',
+        'UPCOMING_DELIVERY': 'Upcoming Delivery',
+        'DELIVERY_DELAYED': 'Delivery Delayed',
+        'ORDER_STATUS_CHANGE': 'Order Status Update',
+        'MATERIAL_REFILL_NEEDED': 'Material Refill Needed',
+        'NEW_ORDER_APPROVAL': 'New Order Pending Approval',
+        'SYSTEM': 'System Notification'
+    };
+    return titles[type] || 'Notification';
+}
+
+function getNotificationPriority(type) {
+    const priorities = {
+        'LOW_STOCK': 'high',
+        'UPCOMING_DELIVERY': 'medium',
+        'DELIVERY_DELAYED': 'high',
+        'ORDER_STATUS_CHANGE': 'medium',
+        'MATERIAL_REFILL_NEEDED': 'high',
+        'NEW_ORDER_APPROVAL': 'high',
+        'SYSTEM': 'low'
+    };
+    return priorities[type] || 'medium';
+}
+
+function getNotificationCategory(type) {
+    const categories = {
+        'LOW_STOCK': 'inventory',
+        'UPCOMING_DELIVERY': 'delivery',
+        'DELIVERY_DELAYED': 'delivery',
+        'ORDER_STATUS_CHANGE': 'order',
+        'MATERIAL_REFILL_NEEDED': 'inventory',
+        'NEW_ORDER_APPROVAL': 'order',
+        'SYSTEM': 'system'
+    };
+    return categories[type] || 'general';
+}
+
+// Mark notification as read
+router.put('/:id/read', authenticateToken, async (req, res) => {
+    try {
+        const notificationId = req.params.id;
+
+        // Update notification read status in database
+        const notification = await Notification.findOneAndUpdate(
+            {
+                _id: notificationId,
+                $or: [
+                    { toUserId: req.user._id },
+                    { toRole: req.user.role.toUpperCase() }
+                ]
+            },
+            { read: true, readAt: new Date() },
+            { new: true }
+        );
+
+        if (!notification) {
+            return res.status(404).json({
+                success: false,
+                error: 'Notification not found or access denied'
+            });
+        }
+
+        logger.info(`Notification ${notificationId} marked as read by user ${req.user._id}`);
+
+        res.json({
+            success: true,
+            message: 'Notification marked as read',
+            data: {
+                id: notification._id,
+                read: notification.read,
+                readAt: notification.readAt
+            }
+        });
+    } catch (error) {
+        logger.error('Mark notification as read error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to mark notification as read',
+            details: error.message
         });
     }
 });
@@ -249,34 +177,47 @@ router.get('/', authenticateToken, async (req, res) => {
 // Get notification statistics
 router.get('/stats', authenticateToken, async (req, res) => {
     try {
-        // Get real-time data from database
-        const realData = await createRealtimeNotifications();
+        // Build query for user-specific notifications
+        const query = {
+            $or: [
+                { toUserId: req.user._id },
+                { toRole: req.user.role.toUpperCase() }
+            ]
+        };
 
-        // Transform to notifications format
-        const notifications = transformToNotifications(realData, req.user._id);
+        // Get total notifications
+        const totalNotifications = await Notification.countDocuments(query);
+
+        // Get unread notifications
+        const unreadNotifications = await Notification.countDocuments({
+            ...query,
+            read: false
+        });
+
+        // Get notifications by category
+        const categoryStats = await Notification.aggregate([
+            { $match: query },
+            {
+                $group: {
+                    _id: '$type',
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
 
         const stats = {
-            total: notifications.length,
-            unread: notifications.filter(n => !n.isRead).length,
-            read: notifications.filter(n => n.isRead).length,
-            byCategory: {
-                system: notifications.filter(n => n.category === 'system').length,
-                inventory: notifications.filter(n => n.category === 'inventory').length,
-                order: notifications.filter(n => n.category === 'order').length,
-                delivery: notifications.filter(n => n.category === 'delivery').length,
-                user: notifications.filter(n => n.category === 'user').length
-            },
-            byPriority: {
-                high: notifications.filter(n => n.priority === 'high').length,
-                normal: notifications.filter(n => n.priority === 'normal').length,
-                low: notifications.filter(n => n.priority === 'low').length
-            },
-            byType: {
-                info: notifications.filter(n => n.type === 'info').length,
-                warning: notifications.filter(n => n.type === 'warning').length,
-                error: notifications.filter(n => n.type === 'error').length,
-                success: notifications.filter(n => n.type === 'success').length
-            }
+            total: totalNotifications,
+            unread: unreadNotifications,
+            read: totalNotifications - unreadNotifications,
+            byCategory: categoryStats.reduce((acc, stat) => {
+                const category = getNotificationCategory(stat._id);
+                acc[category] = (acc[category] || 0) + stat.count;
+                return acc;
+            }, {}),
+            byType: categoryStats.reduce((acc, stat) => {
+                acc[stat._id.toLowerCase()] = stat.count;
+                return acc;
+            }, {})
         };
 
         res.json({
@@ -288,7 +229,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to fetch notification statistics',
-            errorType: 'FETCH_STATS_ERROR'
+            details: error.message
         });
     }
 });
@@ -296,13 +237,16 @@ router.get('/stats', authenticateToken, async (req, res) => {
 // Get unread notifications count
 router.get('/unread-count', authenticateToken, async (req, res) => {
     try {
-        // Get real-time data from database
-        const realData = await createRealtimeNotifications();
+        // Build query for user-specific notifications
+        const query = {
+            $or: [
+                { toUserId: req.user._id },
+                { toRole: req.user.role.toUpperCase() }
+            ],
+            read: false
+        };
 
-        // Transform to notifications format
-        const notifications = transformToNotifications(realData, req.user._id);
-
-        const unreadCount = notifications.filter(n => !n.isRead).length;
+        const unreadCount = await Notification.countDocuments(query);
 
         logger.info(`Unread notifications count: ${unreadCount} for user ${req.user._id}`);
 
@@ -317,7 +261,7 @@ router.get('/unread-count', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to fetch unread count',
-            errorType: 'FETCH_UNREAD_COUNT_ERROR'
+            details: error.message
         });
     }
 });
@@ -325,32 +269,51 @@ router.get('/unread-count', authenticateToken, async (req, res) => {
 // Get single notification
 router.get('/:id', authenticateToken, async (req, res) => {
     try {
-        // Get real-time data from database
-        const realData = await createRealtimeNotifications();
+        const notificationId = req.params.id;
 
-        // Transform to notifications format
-        const notifications = transformToNotifications(realData, req.user._id);
-
-        const notification = notifications.find(n => n._id === req.params.id);
+        // Find notification for this user
+        const notification = await Notification.findOne({
+            _id: notificationId,
+            $or: [
+                { toUserId: req.user._id },
+                { toRole: req.user.role.toUpperCase() }
+            ]
+        })
+            .populate('toUserId', 'fullName email role')
+            .lean();
 
         if (!notification) {
             return res.status(404).json({
                 success: false,
-                error: 'Notification not found',
-                errorType: 'NOTIFICATION_NOT_FOUND'
+                error: 'Notification not found or access denied'
             });
         }
 
+        // Transform to expected format
+        const transformedNotification = {
+            id: notification._id,
+            title: getNotificationTitle(notification.type),
+            message: notification.message,
+            type: notification.type.toLowerCase(),
+            priority: getNotificationPriority(notification.type),
+            category: getNotificationCategory(notification.type),
+            timestamp: notification.createdAt,
+            isRead: notification.read,
+            metadata: notification.meta || {},
+            userId: notification.toUserId?._id,
+            userRole: notification.toRole
+        };
+
         res.json({
             success: true,
-            data: notification
+            data: transformedNotification
         });
     } catch (error) {
         logger.error('Get notification error:', error);
         res.status(500).json({
             success: false,
             error: 'Failed to fetch notification',
-            errorType: 'FETCH_NOTIFICATION_ERROR'
+            details: error.message
         });
     }
 });
@@ -388,79 +351,40 @@ router.post('/', authorize('admin', 'warehouse', 'cashier'), async (req, res) =>
     }
 });
 
-// Mark notification as read
-router.put('/:id/read', authenticateToken, async (req, res) => {
-    try {
-        // Get real-time data from database
-        const realData = await createRealtimeNotifications();
-
-        // Transform to notifications format
-        const notifications = transformToNotifications(realData, req.user._id);
-
-        const notification = notifications.find(n => n._id === req.params.id);
-
-        if (!notification) {
-            return res.status(404).json({
-                success: false,
-                error: 'Notification not found',
-                errorType: 'NOTIFICATION_NOT_FOUND'
-            });
-        }
-
-        // Mark as read in temporary storage
-        readNotifications.add(req.params.id);
-        notification.isRead = true;
-        notification.readAt = new Date().toISOString();
-        notification.status = 'read';
-
-        logger.info(`Notification ${req.params.id} marked as read by user ${req.user._id}`);
-
-        res.json({
-            success: true,
-            message: 'Notification marked as read',
-            data: notification
-        });
-    } catch (error) {
-        logger.error('Mark notification as read error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to mark notification as read',
-            errorType: 'MARK_READ_ERROR'
-        });
-    }
-});
-
 // Mark all notifications as read
 router.put('/mark-all-read', authenticateToken, async (req, res) => {
     try {
-        // Get real-time data from database
-        const realData = await createRealtimeNotifications();
+        // Build query for user-specific notifications
+        const query = {
+            $or: [
+                { toUserId: req.user._id },
+                { toRole: req.user.role.toUpperCase() }
+            ],
+            read: false
+        };
 
-        // Transform to notifications format
-        const notifications = transformToNotifications(realData, req.user._id);
-
-        let updatedCount = 0;
-
-        notifications.forEach(notification => {
-            if (!notification.isRead) {
-                readNotifications.add(notification._id);
-                updatedCount++;
+        // Update all unread notifications to read
+        const result = await Notification.updateMany(
+            query,
+            {
+                read: true,
+                readAt: new Date()
             }
-        });
+        );
 
-        logger.info(`Marked ${updatedCount} notifications as read for user ${req.user._id}`);
+        logger.info(`Marked ${result.modifiedCount} notifications as read for user ${req.user._id}`);
 
         res.json({
             success: true,
-            message: `Marked ${updatedCount} notifications as read`,
-            data: { updatedCount }
+            message: `Marked ${result.modifiedCount} notifications as read`,
+            data: { updatedCount: result.modifiedCount }
         });
     } catch (error) {
         logger.error('Mark all notifications as read error:', error);
         res.status(500).json({
             success: false,
             error: 'Failed to mark all notifications as read',
-            errorType: 'MARK_ALL_READ_ERROR'
+            details: error.message
         });
     }
 });
@@ -468,11 +392,25 @@ router.put('/mark-all-read', authenticateToken, async (req, res) => {
 // Delete notification
 router.delete('/:id', authenticateToken, async (req, res) => {
     try {
-        // Since we're using real-time data, we'll just mark as deleted in our read set
-        // In production, this would delete from database or mark as archived
-        readNotifications.add(`deleted_${req.params.id}`);
+        const notificationId = req.params.id;
 
-        logger.info(`Notification ${req.params.id} deleted by user ${req.user._id}`);
+        // Delete notification from database (only if user has access)
+        const result = await Notification.findOneAndDelete({
+            _id: notificationId,
+            $or: [
+                { toUserId: req.user._id },
+                { toRole: req.user.role.toUpperCase() }
+            ]
+        });
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                error: 'Notification not found or access denied'
+            });
+        }
+
+        logger.info(`Notification ${notificationId} deleted by user ${req.user._id}`);
 
         res.json({
             success: true,
@@ -483,7 +421,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to delete notification',
-            errorType: 'DELETE_NOTIFICATION_ERROR'
+            details: error.message
         });
     }
 });
