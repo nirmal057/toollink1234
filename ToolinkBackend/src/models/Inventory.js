@@ -17,19 +17,64 @@ const inventorySchema = new mongoose.Schema({
         required: true,
         trim: true,
         enum: [
-            'Cement',
+            // Main categories for admin users (simplified)
+            'Sand & Aggregate',
+            'Bricks & Masonry',
             'Steel & Reinforcement',
+            'Tools & Equipment',
+
+            // Warehouse 1 - Sand & Aggregate Categories (detailed)
+            'Fine Sand',
+            'Medium Sand',
+            'Coarse Sand',
+            'River Sand',
+            'Washed Sand',
+            'M-Sand (Crushed Rock)',
+            'Aggregate',
+            'Gravel',
+            'Stone Chips',
+
+            // Warehouse 2 - Bricks & Masonry Categories (detailed)
+            'Solid Cement Blocks',
+            'Hollow Cement Blocks',
+            'Clay Bricks',
+            '4 Inch Blocks',
+            '6 Inch Blocks',
+            '8 Inch Blocks',
+            'Interlocking Pavers',
+            'Granite Slabs',
+            'Decorative Stones',
+
+            // Warehouse 3 - Steel & Reinforcement Categories (detailed)
+            '6mm Steel Rods',
+            '8mm Steel Rods',
+            '10mm Steel Rods',
+            '12mm Steel Rods',
+            '16mm Steel Rods',
+            '20mm Steel Rods',
+            'Steel Wire',
+            'Wire Mesh',
+            'Angle Iron',
+            'Steel Plates',
+
+            // Main Warehouse - Tools & Equipment Categories (detailed)
+            'Power Drills',
+            'Angle Grinders',
+            'Rotary Hammers',
+            'Hand Tools',
+            'Measuring Tools',
+            'Safety Equipment',
+            'Hardware',
+            'Electrical Tools',
+            'Cutting Tools',
+
+            // General/Legacy Categories
+            'Cement',
             'Paint & Chemicals',
             'Electrical Items',
             'Plumbing Supplies',
-            'Tools & Equipment',
-            'Hardware & Fasteners',
             'Tiles & Ceramics',
             'Roofing Materials',
-            'Safety Equipment',
-            'Sand & Aggregate',
-            'Bricks',
-            'Stones',
             'Materials',
             'Other'
         ]
