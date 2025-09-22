@@ -1,5 +1,21 @@
 import express from 'express';
-import { authorize, authenticateToken } from '../middleware/auth.js';
+import { authorize, authenticateToken } fro            userId: userId,
+    type: 'info',
+        category: 'order',
+            title: 'New Order Received',
+                message: `Order ${order.orderNumber} has been placed by ${order.customer?.fullName || 'Customer'}`,
+                    priority: order.priority || 'normal',
+                        status: 'sent',
+                            isRead: readNotifications.has(notificationId),
+                                createdAt: order.createdAt,
+                                    recipient: { specific: false },
+sender: { system: true, name: 'Order System' },
+isArchived: false,
+    metadata: {
+    orderId: order._id,
+        orderNumber: order.orderNumber,
+            customerName: order.customer?.fullName
+} uth.js';
 import logger from '../utils/logger.js';
 import Notification from '../models/Notification.js';
 import Order from '../models/Order.js';
@@ -13,12 +29,12 @@ const router = express.Router();
 const createRealtimeNotifications = async () => {
     try {
         // Get recent orders for notifications
-        const recentOrders = await Order.find({ 
+        const recentOrders = await Order.find({
             createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24 hours
         })
-        .populate('customer', 'fullName email')
-        .sort({ createdAt: -1 })
-        .limit(10);
+            .populate('customer', 'fullName email')
+            .sort({ createdAt: -1 })
+            .limit(10);
 
         // Get low stock items for notifications
         const lowStockItems = await Inventory.find({
@@ -30,19 +46,19 @@ const createRealtimeNotifications = async () => {
         const recentDeliveries = await Delivery.find({
             updatedAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
         })
-        .populate('orderId', 'orderNumber customer')
-        .populate({
-            path: 'orderId',
-            populate: {
-                path: 'customer',
-                select: 'fullName email'
-            }
-        })
-        .sort({ updatedAt: -1 })
-        .limit(10);
+            .populate('orderId', 'orderNumber customer')
+            .populate({
+                path: 'orderId',
+                populate: {
+                    path: 'customer',
+                    select: 'fullName email'
+                }
+            })
+            .sort({ updatedAt: -1 })
+            .limit(10);
 
         // Get pending users for approval
-        const pendingUsers = await User.find({ 
+        const pendingUsers = await User.find({
             isApproved: false,
             createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } // Last 7 days
         }).limit(5);
@@ -190,7 +206,7 @@ router.get('/', authenticateToken, async (req, res) => {
 
         // Get real-time data from database
         const realData = await createRealtimeNotifications();
-        
+
         // Transform to notifications format
         let notifications = transformToNotifications(realData, req.user._id);
 
@@ -244,7 +260,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
     try {
         // Get real-time data from database
         const realData = await createRealtimeNotifications();
-        
+
         // Transform to notifications format
         const notifications = transformToNotifications(realData, req.user._id);
 
@@ -291,10 +307,10 @@ router.get('/unread-count', authenticateToken, async (req, res) => {
     try {
         // Get real-time data from database
         const realData = await createRealtimeNotifications();
-        
+
         // Transform to notifications format
         const notifications = transformToNotifications(realData, req.user._id);
-        
+
         const unreadCount = notifications.filter(n => !n.isRead).length;
 
         logger.info(`Unread notifications count: ${unreadCount} for user ${req.user._id}`);
@@ -323,10 +339,10 @@ router.get('/:id', authenticateToken, async (req, res) => {
     try {
         // Get real-time data from database
         const realData = await createRealtimeNotifications();
-        
+
         // Transform to notifications format
         const notifications = transformToNotifications(realData, req.user._id);
-        
+
         const notification = notifications.find(n => n._id === req.params.id);
 
         if (!notification) {
@@ -398,10 +414,10 @@ router.put('/:id/read', authenticateToken, async (req, res) => {
     try {
         // Get real-time data from database
         const realData = await createRealtimeNotifications();
-        
+
         // Transform to notifications format
         const notifications = transformToNotifications(realData, req.user._id);
-        
+
         const notification = notifications.find(n => n._id === req.params.id);
 
         if (!notification) {
@@ -440,10 +456,10 @@ router.put('/mark-all-read', authenticateToken, async (req, res) => {
     try {
         // Get real-time data from database
         const realData = await createRealtimeNotifications();
-        
+
         // Transform to notifications format
         const notifications = transformToNotifications(realData, req.user._id);
-        
+
         const now = new Date().toISOString();
         let updatedCount = 0;
 
@@ -473,23 +489,23 @@ router.put('/mark-all-read', authenticateToken, async (req, res) => {
         });
     }
 });
-                updatedCount++;
+updatedCount++;
             }
         });
 
-        res.json({
-            success: true,
-            message: `${updatedCount} notifications marked as read`,
-            data: { updatedCount }
-        });
+res.json({
+    success: true,
+    message: `${updatedCount} notifications marked as read`,
+    data: { updatedCount }
+});
     } catch (error) {
-        logger.error('Mark all notifications as read error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to mark all notifications as read',
-            errorType: 'MARK_ALL_READ_ERROR'
-        });
-    }
+    logger.error('Mark all notifications as read error:', error);
+    res.status(500).json({
+        success: false,
+        error: 'Failed to mark all notifications as read',
+        errorType: 'MARK_ALL_READ_ERROR'
+    });
+}
 });
 
 // Delete notification

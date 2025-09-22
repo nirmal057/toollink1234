@@ -81,7 +81,7 @@ const transformToNotifications = (data, userId = null) => {
             type: 'info',
             category: 'order',
             title: 'New Order Received',
-            message: `Order ${order.orderNumber} has been placed by ${order.customer?.fullName || 'Customer'} for Rs. ${order.finalAmount?.toLocaleString() || '0'}`,
+            message: `Order ${order.orderNumber} has been placed by ${order.customer?.fullName || 'Customer'}`,
             priority: order.priority || 'normal',
             status: 'sent',
             isRead: readNotifications.has(notificationId),
@@ -92,8 +92,7 @@ const transformToNotifications = (data, userId = null) => {
             metadata: {
                 orderId: order._id,
                 orderNumber: order.orderNumber,
-                customerName: order.customer?.fullName,
-                amount: order.finalAmount
+                customerName: order.customer?.fullName
             }
         });
     });

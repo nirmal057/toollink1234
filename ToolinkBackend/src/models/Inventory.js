@@ -100,16 +100,6 @@ const inventorySchema = new mongoose.Schema({
         phone: { type: String, trim: true },
         address: { type: String, trim: true }
     },
-    cost: {
-        type: Number,
-        min: 0,
-        default: 0
-    },
-    selling_price: {
-        type: Number,
-        min: 0,
-        default: 0
-    },
     status: {
         type: String,
         enum: ['active', 'inactive', 'discontinued'],

@@ -218,7 +218,6 @@ router.post('/', [
 
         // First pass: Validate all items and check stock
         const validatedItems = [];
-        let totalAmount = 0;
 
         for (const item of items) {
             const inventory = await Inventory.findById(item.inventory);
@@ -239,19 +238,12 @@ router.post('/', [
                 });
             }
 
-            const unitPrice = item.unitPrice || inventory.unitPrice || inventory.selling_price || inventory.cost || 0;
-            const totalPrice = unitPrice * item.quantity;
-
             validatedItems.push({
                 inventory: inventory._id,
                 inventoryName: inventory.name,
                 quantity: item.quantity,
-                unitPrice,
-                totalPrice,
                 notes: item.notes || ''
             });
-
-            totalAmount += totalPrice;
         }
 
         // Create order first
@@ -261,12 +253,8 @@ router.post('/', [
             items: validatedItems.map(item => ({
                 inventory: item.inventory,
                 quantity: item.quantity,
-                unitPrice: item.unitPrice,
-                totalPrice: item.totalPrice,
                 notes: item.notes
             })),
-            totalAmount,
-            finalAmount: totalAmount,
             shippingAddress,
             billingAddress: billingAddress || shippingAddress,
             delivery,

@@ -15,9 +15,7 @@ const materialValidation = [
         'Tools & Equipment', 'Safety Equipment', 'Hardware & Fasteners', 'Other'
     ]).withMessage('Invalid category'),
     body('unit').isIn(['kg', 'ton', 'bag', 'piece']).withMessage('Invalid unit'),
-    body('sku').optional().trim().isLength({ max: 50 }).withMessage('SKU must be max 50 characters'),
-    body('costPrice').optional().isNumeric().isFloat({ min: 0 }).withMessage('Cost price must be a positive number'),
-    body('sellingPrice').optional().isNumeric().isFloat({ min: 0 }).withMessage('Selling price must be a positive number')
+    body('sku').optional().trim().isLength({ max: 50 }).withMessage('SKU must be max 50 characters')
 ];
 
 // GET /api/materials - Get all materials

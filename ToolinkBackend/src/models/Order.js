@@ -27,16 +27,6 @@ const orderSchema = new mongoose.Schema({
             required: true,
             min: 1
         },
-        unitPrice: {
-            type: Number,
-            required: true,
-            min: 0
-        },
-        totalPrice: {
-            type: Number,
-            required: true,
-            min: 0
-        },
         notes: String
     }],
     status: {
@@ -48,26 +38,6 @@ const orderSchema = new mongoose.Schema({
         type: String,
         enum: ['low', 'medium', 'high', 'urgent'],
         default: 'medium'
-    },
-    totalAmount: {
-        type: Number,
-        required: true,
-        min: 0
-    },
-    discount: {
-        type: Number,
-        min: 0,
-        default: 0
-    },
-    tax: {
-        type: Number,
-        min: 0,
-        default: 0
-    },
-    finalAmount: {
-        type: Number,
-        required: true,
-        min: 0
     },
     paymentStatus: {
         type: String,
