@@ -737,6 +737,31 @@ class NotificationService {
     }
 
     /**
+     * Simple create notification method
+     */
+    static async create(toRole, toUserId, type, message, meta = {}) {
+        try {
+            const notification = new Notification({
+                toRole,
+                toUserId,
+                type,
+                message,
+                meta,
+                read: false,
+                createdAt: new Date()
+            });
+
+            await notification.save();
+            logger.info(`Notification created: ${type} for ${toRole || toUserId}`);
+
+            return notification;
+        } catch (error) {
+            logger.error('Create notification failed:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Utility function for delays
      */
     static delay(ms) {

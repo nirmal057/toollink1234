@@ -268,6 +268,7 @@ orderSchema.statics.searchOrders = async function (query, options = {}) {
         status,
         customer,
         customerEmail, // Add customerEmail option
+        warehouseIds, // Add warehouse filtering option
         startDate,
         endDate,
         page = 1,

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 const subOrderSchema = new mongoose.Schema({
     subOrderNumber: {
@@ -16,22 +17,51 @@ const subOrderSchema = new mongoose.Schema({
         ref: 'Warehouse',
         required: true
     },
-    materialId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Material',
-        required: true
-    },
-    qty: {
-        type: Number,
+    materialCategory: {
+        type: String,
         required: true,
-        min: 1
+        enum: [
+            'Cement',
+            'Steel & Reinforcement',
+            'Aggregates',
+            'Bricks & Blocks',
+            'Roofing Materials',
+            'Electrical',
+            'Plumbing',
+            'Paint & Chemicals',
+            'Tools & Equipment',
+            'Safety Equipment',
+            'Hardware & Fasteners',
+            'Other'
+        ]
     },
-    unitPrice: {
-        type: Number,
-        min: 0,
-        default: 0
-    },
-    totalPrice: {
+    items: [{
+        materialId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Material',
+            required: true
+        },
+        materialName: {
+            type: String,
+            required: true
+        },
+        qty: {
+            type: Number,
+            required: true,
+            min: 1
+        },
+        unitPrice: {
+            type: Number,
+            min: 0,
+            default: 0
+        },
+        totalPrice: {
+            type: Number,
+            min: 0,
+            default: 0
+        }
+    }],
+    totalAmount: {
         type: Number,
         min: 0,
         default: 0
@@ -40,10 +70,26 @@ const subOrderSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    scheduledTime: {
+        type: String,
+        required: true,
+        match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
+    },
+    estimatedDuration: {
+        type: Number,
+        default: 60, // minutes
+        min: 15,
+        max: 480
+    },
+    deliverySequence: {
+        type: Number,
+        default: 1,
+        min: 1
+    },
     status: {
         type: String,
         required: true,
-        enum: ['created', 'prepared', 'dispatched', 'delivered', 'failed'],
+        enum: ['created', 'scheduled', 'prepared', 'dispatched', 'delivered', 'failed', 'rescheduled'],
         default: 'created'
     },
     assignedTo: {
@@ -97,9 +143,13 @@ subOrderSchema.pre('save', async function (next) {
     next();
 });
 
-// Calculate total price before saving
+// Calculate total amount before saving
 subOrderSchema.pre('save', function (next) {
-    this.totalPrice = this.qty * this.unitPrice;
+    if (this.items && this.items.length > 0) {
+        this.totalAmount = this.items.reduce((total, item) => {
+            return total + (item.qty * item.unitPrice);
+        }, 0);
+    }
     next();
 });
 
@@ -120,6 +170,9 @@ subOrderSchema.methods.updateStatus = function (newStatus, byUserId, note = '') 
     this.status = newStatus;
     return this.addHistory(`Status changed from ${oldStatus} to ${newStatus}`, byUserId, note);
 };
+
+// Add pagination plugin
+subOrderSchema.plugin(mongoosePaginate);
 
 // Indexes for efficient querying
 subOrderSchema.index({ mainOrderId: 1 });

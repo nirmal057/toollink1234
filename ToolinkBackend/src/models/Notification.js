@@ -11,7 +11,7 @@ const notificationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['LOW_STOCK', 'UPCOMING_DELIVERY', 'DELIVERY_DELAYED', 'ORDER_STATUS_CHANGE', 'MATERIAL_REFILL_NEEDED', 'NEW_ORDER_APPROVAL', 'SYSTEM'],
+        enum: ['LOW_STOCK', 'UPCOMING_DELIVERY', 'DELIVERY_DELAYED', 'ORDER_STATUS_CHANGE', 'MATERIAL_REFILL_NEEDED', 'NEW_ORDER_APPROVAL', 'NEW_ORDER_RECEIVED', 'ORDER_READY_FOR_DELIVERY', 'SYSTEM'],
         required: true
     },
     message: {

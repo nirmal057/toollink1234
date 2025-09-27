@@ -293,17 +293,81 @@ class EnhancedOrderService {
                 await EmailService.sendOrderNotification(customer.email, order, action);
             }
 
-            // Create in-app notifications for admin/warehouse staff
+            // Get all warehouses involved in this order
+            const warehouseIds = new Set();
+            const warehouseItems = new Map();
+
+            for (const item of order.items) {
+                const inventoryItem = await Inventory.findById(item.inventory);
+                if (inventoryItem?.warehouse) {
+                    warehouseIds.add(inventoryItem.warehouse);
+                    if (!warehouseItems.has(inventoryItem.warehouse)) {
+                        warehouseItems.set(inventoryItem.warehouse, []);
+                    }
+                    warehouseItems.get(inventoryItem.warehouse).push({
+                        name: inventoryItem.name,
+                        quantity: item.quantity,
+                        unit: inventoryItem.unit
+                    });
+                }
+            }
+
+            // Send warehouse-specific notifications
+            for (const warehouseId of warehouseIds) {
+                const warehouseUsers = await User.find({
+                    role: { $in: ['warehouse', 'manager', 'admin'] },
+                    warehouse: warehouseId,
+                    isActive: true
+                });
+
+                // Also get users without specific warehouse (admins)
+                const generalAdmins = await User.find({
+                    role: { $in: ['admin', 'manager'] },
+                    $or: [
+                        { warehouse: { $exists: false } },
+                        { warehouse: null }
+                    ],
+                    isActive: true
+                });
+
+                const allRelevantUsers = [...warehouseUsers, ...generalAdmins];
+                const items = warehouseItems.get(warehouseId) || [];
+                const itemsText = items.map(item => `${item.name} (${item.quantity} ${item.unit})`).join(', ');
+
+                for (const user of allRelevantUsers) {
+                    await Notification.create({
+                        userId: user._id,
+                        title: `🏪 New Order for ${this.getWarehouseDisplayName(warehouseId)}: ${order.orderNumber}`,
+                        message: `Order from ${customer?.fullName || 'Customer'} requires materials from your warehouse: ${itemsText}`,
+                        category: 'order',
+                        type: 'warehouse-order',
+                        priority: order.priority || 'normal',
+                        data: {
+                            orderId: order._id,
+                            orderNumber: order.orderNumber,
+                            customerName: customer?.fullName,
+                            warehouseId: warehouseId,
+                            warehouseName: this.getWarehouseDisplayName(warehouseId),
+                            items: items,
+                            action: action
+                        }
+                    });
+                }
+
+                logger.info(`Warehouse notification sent to ${warehouseId} for order ${order.orderNumber} with items: ${itemsText}`);
+            }
+
+            // General notification for admins (overview)
             const adminUsers = await User.find({
-                role: { $in: ['admin', 'warehouse', 'manager'] },
+                role: 'admin',
                 isActive: true
             });
 
             for (const admin of adminUsers) {
                 await Notification.create({
                     userId: admin._id,
-                    title: `New Order: ${order.orderNumber}`,
-                    message: `Order placed by ${customer?.fullName || 'Customer'} for Rs. ${order.finalAmount?.toLocaleString() || '0'}`,
+                    title: `📋 Order Overview: ${order.orderNumber}`,
+                    message: `New order spanning ${warehouseIds.size} warehouse(s) from ${customer?.fullName || 'Customer'}`,
                     category: 'order',
                     type: 'order-created',
                     priority: order.priority || 'normal',
@@ -311,12 +375,13 @@ class EnhancedOrderService {
                         orderId: order._id,
                         orderNumber: order.orderNumber,
                         customerName: customer?.fullName,
-                        amount: order.finalAmount
+                        warehouseCount: warehouseIds.size,
+                        warehouses: Array.from(warehouseIds)
                     }
                 });
             }
 
-            logger.info(`Order notifications sent for ${order.orderNumber}`);
+            logger.info(`Enhanced order notifications sent for ${order.orderNumber} to ${warehouseIds.size} warehouses`);
         } catch (error) {
             logger.error('Failed to send order notifications:', error);
         }
@@ -484,6 +549,21 @@ class EnhancedOrderService {
         } finally {
             session.endSession();
         }
+    }
+
+    /**
+     * Get display name for warehouse
+     */
+    static getWarehouseDisplayName(warehouseId) {
+        const warehouseNames = {
+            'main_warehouse': 'Main Warehouse',
+            'north_warehouse': 'North Warehouse',
+            'south_warehouse': 'South Warehouse',
+            'east_warehouse': 'East Warehouse',
+            'west_warehouse': 'West Warehouse',
+            'central_warehouse': 'Central Warehouse'
+        };
+        return warehouseNames[warehouseId] || warehouseId || 'Unknown Warehouse';
     }
 }
 

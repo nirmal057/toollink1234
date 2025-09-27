@@ -539,4 +539,140 @@ router.post('/warehouse-confirmation', authenticateToken, async (req, res) => {
     }
 });
 
+// Mark notification as read and get redirect URL
+router.post('/:notificationId/click', authenticateToken, async (req, res) => {
+    try {
+        const { notificationId } = req.params;
+
+        // Find and mark notification as read
+        const notification = await Notification.findById(notificationId);
+
+        if (!notification) {
+            return res.status(404).json({
+                success: false,
+                error: 'Notification not found'
+            });
+        }
+
+        // Check if user has access to this notification
+        const hasAccess = notification.toUserId?.toString() === req.user._id.toString() ||
+            notification.toRole === req.user.role.toUpperCase();
+
+        if (!hasAccess) {
+            return res.status(403).json({
+                success: false,
+                error: 'Access denied to this notification'
+            });
+        }
+
+        // Mark as read
+        if (!notification.read) {
+            notification.read = true;
+            notification.readAt = new Date();
+            await notification.save();
+        }
+
+        // Generate appropriate redirect URL based on notification type and metadata
+        let redirectUrl = '/dashboard';
+
+        if (notification.meta && notification.meta.actionUrl) {
+            redirectUrl = notification.meta.actionUrl;
+        } else {
+            // Generate URL based on notification type
+            switch (notification.type) {
+                case 'NEW_ORDER_RECEIVED':
+                    if (notification.meta?.mainOrderId) {
+                        redirectUrl = `/warehouse/orders/received/${notification.meta.mainOrderId}`;
+                    }
+                    break;
+                case 'ORDER_STATUS_CHANGE':
+                    redirectUrl = '/orders';
+                    break;
+                case 'LOW_STOCK':
+                    redirectUrl = '/inventory';
+                    break;
+                case 'UPCOMING_DELIVERY':
+                case 'DELIVERY_DELAYED':
+                    redirectUrl = '/deliveries';
+                    break;
+                case 'ORDER_READY_FOR_DELIVERY':
+                    redirectUrl = '/deliveries';
+                    break;
+                default:
+                    redirectUrl = '/dashboard';
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Notification marked as read',
+            data: {
+                redirectUrl,
+                notification: {
+                    id: notification._id,
+                    type: notification.type,
+                    message: notification.message,
+                    read: notification.read,
+                    readAt: notification.readAt,
+                    meta: notification.meta
+                }
+            }
+        });
+
+    } catch (error) {
+        logger.error('Notification click error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to process notification click',
+            details: error.message
+        });
+    }
+});
+
+// Mark notification as read (separate endpoint)
+router.put('/:notificationId/read', authenticateToken, async (req, res) => {
+    try {
+        const { notificationId } = req.params;
+
+        const notification = await Notification.findById(notificationId);
+
+        if (!notification) {
+            return res.status(404).json({
+                success: false,
+                error: 'Notification not found'
+            });
+        }
+
+        // Check access
+        const hasAccess = notification.toUserId?.toString() === req.user._id.toString() ||
+            notification.toRole === req.user.role.toUpperCase();
+
+        if (!hasAccess) {
+            return res.status(403).json({
+                success: false,
+                error: 'Access denied to this notification'
+            });
+        }
+
+        // Mark as read
+        notification.read = true;
+        notification.readAt = new Date();
+        await notification.save();
+
+        res.json({
+            success: true,
+            message: 'Notification marked as read',
+            data: notification
+        });
+
+    } catch (error) {
+        logger.error('Mark notification read error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to mark notification as read',
+            details: error.message
+        });
+    }
+});
+
 export default router;

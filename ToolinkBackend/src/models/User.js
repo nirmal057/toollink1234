@@ -49,6 +49,14 @@ const userSchema = new mongoose.Schema({
         ],
         default: 'customer'
     },
+    assignedWarehouses: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Warehouse'
+    }],
+    primaryWarehouse: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Warehouse'
+    },
     isActive: {
         type: Boolean,
         default: true

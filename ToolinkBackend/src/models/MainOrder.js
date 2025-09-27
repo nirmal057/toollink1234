@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 const mainOrderSchema = new mongoose.Schema({
     orderNumber: {
@@ -61,13 +62,20 @@ const mainOrderSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['created', 'scheduled', 'partially-dispatched', 'completed', 'cancelled'],
+        enum: ['created', 'scheduled', 'split_scheduled', 'partially-dispatched', 'completed', 'cancelled'],
         default: 'created'
     },
     totalAmount: {
         type: Number,
         min: 0,
         default: 0
+    },
+    subOrderIds: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'SubOrder'
+    }],
+    requestedDeliveryDate: {
+        type: Date
     },
     notes: {
         type: String,
@@ -104,6 +112,9 @@ mainOrderSchema.pre('save', function (next) {
     this.totalAmount = this.items.reduce((total, item) => total + item.totalPrice, 0);
     next();
 });
+
+// Add pagination plugin
+mainOrderSchema.plugin(mongoosePaginate);
 
 // Indexes for efficient querying
 mainOrderSchema.index({ customerId: 1, createdAt: -1 });
