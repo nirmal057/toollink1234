@@ -13,7 +13,7 @@ router.use(authenticateToken);
 // Create delivery from confirmed order (Warehouse-based splitting)
 router.post('/create-from-order', authorize('admin', 'warehouse', 'cashier'), async (req, res) => {
     try {
-        const { orderId, deliveryDate, timeSlot } = req.body;
+        const { orderId, deliveryDate, timeSlot, deliveryAddress, contactNumber, specialInstructions } = req.body;
 
         // Validate delivery date (must be tomorrow or later)
         const tomorrow = new Date();
@@ -30,8 +30,8 @@ router.post('/create-from-order', authorize('admin', 'warehouse', 'cashier'), as
 
         // Get the order with populated inventory items
         const order = await Order.findById(orderId)
-            .populate('customer', 'email name phone')
-            .populate('items.inventory');
+            .populate('customerId', 'email name phone')
+            .populate('items.inventoryId');
 
         if (!order) {
             return res.status(404).json({
@@ -40,7 +40,7 @@ router.post('/create-from-order', authorize('admin', 'warehouse', 'cashier'), as
             });
         }
 
-        if (order.status !== 'Confirmed') {
+        if (order.status !== 'confirmed') {
             return res.status(400).json({
                 success: false,
                 message: 'Order must be confirmed before creating delivery'
@@ -50,14 +50,7 @@ router.post('/create-from-order', authorize('admin', 'warehouse', 'cashier'), as
         // Group items by warehouse
         const warehouseGroups = {};
         for (const item of order.items) {
-            const inventory = item.inventory;
-
-            // Skip items with invalid inventory references
-            if (!inventory) {
-                console.warn(`Skipping item with null inventory reference in order ${order._id}`);
-                continue;
-            }
-
+            const inventory = item.inventoryId;
             const warehouseKey = inventory.warehouse || 'default';
 
             if (!warehouseGroups[warehouseKey]) {
@@ -77,41 +70,13 @@ router.post('/create-from-order', authorize('admin', 'warehouse', 'cashier'), as
             });
         }
 
-        // Check if any valid items were found
-        if (Object.keys(warehouseGroups).length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'No valid inventory items found in order'
-            });
-        }
-
-        // Extract delivery information from request or order
-        const deliveryAddress = req.body.deliveryAddress || order.shippingAddress;
-        const contactNumber = req.body.contactNumber || order.shippingAddress?.phone || order.customer?.phone;
-        const specialInstructions = req.body.specialInstructions || order.notes || '';
-
-        // Validate required fields
-        if (!deliveryAddress || !deliveryAddress.street || !deliveryAddress.city || !deliveryAddress.state || !deliveryAddress.zipCode) {
-            return res.status(400).json({
-                success: false,
-                message: 'Complete delivery address is required'
-            });
-        }
-
-        if (!contactNumber) {
-            return res.status(400).json({
-                success: false,
-                message: 'Contact number is required for delivery'
-            });
-        }
-
         // Create separate delivery for each warehouse
         const deliveries = [];
         for (const [warehouseId, warehouseData] of Object.entries(warehouseGroups)) {
             const delivery = new Delivery({
                 orderId: order._id,
-                customerId: order.customer,
-                customerEmail: order.customerEmail,
+                customerId: order.customerId._id,
+                customerEmail: order.customerId.email,
                 warehouseId: warehouseData.warehouseId,
                 warehouseName: warehouseData.warehouseName,
                 items: warehouseData.items,
