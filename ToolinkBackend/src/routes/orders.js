@@ -1507,6 +1507,71 @@ router.get('/sub-orders', authorize('admin', 'warehouse', 'cashier'), async (req
     }
 });
 
+// Create individual sub-order
+router.post('/sub-orders', authorize('admin', 'cashier', 'warehouse'), async (req, res) => {
+    try {
+        const {
+            mainOrderId,
+            warehouseId,
+            items,
+            status = 'Pending',
+            assignedDate,
+            customerInfo,
+            deliveryInfo,
+            notes
+        } = req.body;
+
+        // Validate required fields
+        if (!mainOrderId || !warehouseId || !items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields: mainOrderId, warehouseId, and items are required'
+            });
+        }
+
+        // Generate sub-order number
+        const subOrderCount = await SubOrder.countDocuments({ mainOrderId });
+        const subOrderNumber = `SUB-${Date.now()}-${subOrderCount + 1}`;
+
+        // Calculate total amount
+        const totalAmount = items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+
+        // Create sub-order
+        const subOrder = new SubOrder({
+            subOrderNumber,
+            mainOrderId,
+            warehouseId,
+            items,
+            status,
+            assignedDate: assignedDate ? new Date(assignedDate) : new Date(),
+            customerInfo,
+            deliveryInfo,
+            totalAmount,
+            notes,
+            createdBy: req.user._id,
+            scheduledAt: assignedDate ? new Date(assignedDate) : null
+        });
+
+        const savedSubOrder = await subOrder.save();
+
+        logger.info(`Sub-order created: ${subOrderNumber} for warehouse ${warehouseId} by ${req.user.fullName}`);
+
+        res.status(201).json({
+            success: true,
+            message: 'Sub-order created successfully',
+            data: savedSubOrder
+        });
+
+    } catch (error) {
+        logger.error('Create sub-order error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to create sub-order',
+            details: error.message
+        });
+    }
+});
+
 // Update sub-order status (warehouse users)
 router.put('/sub-order/:id/status', authorize('admin', 'warehouse', 'cashier'), [
     body('status').isIn(['created', 'scheduled', 'prepared', 'dispatched', 'delivered', 'failed', 'rescheduled']).withMessage('Invalid status'),

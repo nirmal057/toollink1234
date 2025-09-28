@@ -46,7 +46,7 @@ const __dirname = path.dirname(__filename);
 config();
 
 const app = express();
-const PORT = process.env.PORT || 5000; // Server port
+const PORT = process.env.PORT || 5001; // Changed back to 5001
 
 // Security middleware
 app.use(helmet({
