@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Order from '../models/Order.js';
+import SubOrder from '../models/SubOrder.js';
 import Inventory from '../models/Inventory.js';
 import Delivery from '../models/Delivery.js';
 import Notification from '../models/Notification.js';
@@ -22,21 +23,42 @@ class EnhancedOrderService {
         session.startTransaction();
 
         try {
+            logger.info(`Creating enhanced order for user ${userId} with ${orderData.items?.length || 0} items`);
+            logger.info(`Order data received:`, JSON.stringify(orderData, null, 2));
+            logger.info(`User ID received:`, userId);
+
             // 1. Validate inventory availability across warehouses
             const inventoryValidation = await this.validateOrderInventory(orderData.items);
             if (!inventoryValidation.isValid) {
                 throw new Error(`Insufficient inventory: ${inventoryValidation.errors.join(', ')}`);
             }
 
-            // 2. Create main order
-            const order = new Order({
+            // 2. Get user details for required fields
+            const user = await User.findById(userId);
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            // 3. Create main order - handle customer field properly
+            const orderPayload = {
                 ...orderData,
+                customer: userId, // Set customer to the authenticated user ID
+                customerEmail: user.email, // Set required customerEmail from user data
                 createdBy: userId,
                 status: 'pending'
-            });
+            };
+
+            // Remove customerName if it exists (not part of Order schema)
+            if (orderPayload.customerName) {
+                delete orderPayload.customerName;
+            }
+
+            logger.info(`Order payload before save:`, JSON.stringify(orderPayload, null, 2));
+
+            const order = new Order(orderPayload);
             await order.save({ session });
 
-            // 3. Split order by warehouse if needed
+            // 4. Split order by warehouse if needed
             const warehouseSplits = await this.splitOrderByWarehouse(order.items);
             const subOrders = [];
 
@@ -45,21 +67,21 @@ class EnhancedOrderService {
                 subOrders.push(subOrder);
             }
 
-            // 4. Reserve inventory
+            // 5. Reserve inventory
             await this.reserveInventoryForOrder(order.items, order._id, session);
 
-            // 5. Create automatic delivery schedules
+            // 6. Create automatic delivery schedules
             const deliveries = await this.createDeliverySchedules(order, subOrders, session);
 
-            // 6. Update prediction models
+            // 7. Update prediction models
             await PredictionService.updateDemandPrediction(order.items);
 
-            // 7. Send notifications
+            // 8. Send notifications
             await this.sendOrderNotifications(order, 'created');
 
             await session.commitTransaction();
 
-            // 8. Return complete order with all related data
+            // 9. Return complete order with all related data
             const completeOrder = await Order.findById(order._id)
                 .populate('customer')
                 .populate('items.inventory')
@@ -197,34 +219,55 @@ class EnhancedOrderService {
     static async createDeliverySchedules(order, subOrders, session) {
         const deliveries = [];
 
-        for (const subOrder of subOrders) {
-            // Calculate delivery priority based on material type
-            const priority = await this.calculateDeliveryPriority(subOrder.items);
+        try {
+            // Get customer details if not populated
+            let customer = order.customer;
+            if (typeof customer === 'string' || !customer.fullName) {
+                customer = await User.findById(order.customer);
+            }
 
-            // Estimate delivery date based on material type and distance
-            const estimatedDate = await this.estimateDeliveryDate(subOrder);
+            for (const subOrder of subOrders) {
+                // Calculate delivery priority based on material type
+                const priority = await this.calculateDeliveryPriority(subOrder.items);
 
-            const deliveryData = {
-                orderId: order._id,
-                subOrderId: subOrder._id,
-                customerName: order.customer.fullName || order.customer.name,
-                customerPhone: order.customer.phone,
-                customerEmail: order.customer.email,
-                deliveryAddress: order.shippingAddress,
-                priority,
-                scheduledDate: estimatedDate,
-                status: 'pending',
-                specialInstructions: order.delivery?.notes || '',
-                items: subOrder.items.map(item => ({
-                    name: item.name,
-                    quantity: item.quantity,
-                    unit: item.unit
-                }))
-            };
+                // Estimate delivery date based on material type and distance
+                const estimatedDate = await this.estimateDeliveryDate(subOrder);
 
-            const delivery = new Delivery(deliveryData);
-            await delivery.save({ session });
-            deliveries.push(delivery);
+                // Ensure delivery address is properly structured
+                const deliveryAddress = {
+                    street: order.shippingAddress?.street || 'Address not provided',
+                    city: order.shippingAddress?.city || 'City not provided',
+                    state: order.shippingAddress?.state || 'State not provided',
+                    zipCode: order.shippingAddress?.zipCode || '00000',
+                    country: order.shippingAddress?.country || 'Sri Lanka',
+                    phone: order.shippingAddress?.phone || customer?.phone || 'Phone not provided'
+                };
+
+                const deliveryData = {
+                    orderId: order._id,
+                    subOrderId: subOrder._id,
+                    customerName: customer?.fullName || customer?.name || order.customerName || 'Unknown Customer',
+                    customerPhone: customer?.phone || order.shippingAddress?.phone || 'Phone not provided',
+                    customerEmail: order.customerEmail || customer?.email || 'Email not provided',
+                    deliveryAddress: deliveryAddress,
+                    priority,
+                    scheduledDate: estimatedDate,
+                    status: 'pending',
+                    specialInstructions: order.delivery?.notes || order.notes || '',
+                    items: subOrder.items.map(item => ({
+                        name: item.name || 'Unknown Item',
+                        quantity: item.quantity || 0,
+                        unit: item.unit || 'units'
+                    }))
+                };
+
+                const delivery = new Delivery(deliveryData);
+                await delivery.save({ session });
+                deliveries.push(delivery);
+            }
+        } catch (error) {
+            logger.error('Error creating delivery schedules:', error);
+            throw new Error(`Failed to create delivery schedules: ${error.message}`);
         }
 
         return deliveries;
