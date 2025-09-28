@@ -25,6 +25,7 @@ import predictionRoutes from './src/routes/predictions.js';
 import messageRoutes from './src/routes/messages.js';
 import enhancedRoutes from './src/routes/enhanced.js';
 import rolesRoutes from './src/routes/roles.js';
+import deliveryManagementRoutes from './src/routes/delivery-management.js';
 
 // Import middleware
 import { authenticateToken } from './src/middleware/auth.js';
@@ -182,6 +183,7 @@ app.use('/api/predictions', predictionRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/enhanced', enhancedRoutes);
 app.use('/api/roles', rolesRoutes);
+app.use('/api/delivery-management', deliveryManagementRoutes);
 
 // Error handling middleware (must be last)
 app.use(notFoundHandler);
