@@ -902,6 +902,134 @@ router.patch('/:id/approve', authorize('admin', 'warehouse', 'cashier'), async (
             });
         }
 
+        // Create Sub-Orders by Warehouse Division based on inventory warehouse assignment
+        const warehouseGroups = new Map();
+
+        // Group items by their warehouse based on inventory warehouse field
+        for (const item of order.items) {
+            const inventory = await Inventory.findById(item.inventory._id);
+            if (!inventory) continue;
+
+            // Determine warehouse code based on inventory warehouse or category
+            let warehouseCode = 'WM'; // Default to Main Warehouse
+
+            // Map inventory warehouse to warehouse codes
+            if (inventory.warehouse) {
+                switch (inventory.warehouse.toLowerCase()) {
+                    case 'warehouse1':
+                    case 'w1':
+                    case 'sand & aggregate':
+                        warehouseCode = 'W1';
+                        break;
+                    case 'warehouse2':
+                    case 'w2':
+                    case 'bricks & masonry':
+                        warehouseCode = 'W2';
+                        break;
+                    case 'warehouse3':
+                    case 'w3':
+                    case 'steel & metal':
+                        warehouseCode = 'W3';
+                        break;
+                    default:
+                        warehouseCode = 'WM';
+                }
+            } else if (inventory.category) {
+                // Fallback: categorize based on material category
+                const category = inventory.category.toLowerCase();
+                if (category.includes('sand') || category.includes('aggregate') || category.includes('stone')) {
+                    warehouseCode = 'W1';
+                } else if (category.includes('brick') || category.includes('masonry') || category.includes('block')) {
+                    warehouseCode = 'W2';
+                } else if (category.includes('steel') || category.includes('metal') || category.includes('rod')) {
+                    warehouseCode = 'W3';
+                } else {
+                    warehouseCode = 'WM';
+                }
+            }
+
+            if (!warehouseGroups.has(warehouseCode)) {
+                warehouseGroups.set(warehouseCode, []);
+            }
+
+            warehouseGroups.get(warehouseCode).push({
+                inventory: inventory._id,
+                name: inventory.name,
+                quantity: item.quantity,
+                categoryId: WarehouseCategoryUtils.getCategoryIdByMaterial(warehouseCode, inventory.name) || `${warehouseCode}-001`,
+                unitPrice: inventory.price || 0,
+                totalPrice: (inventory.price || 0) * item.quantity,
+                notes: item.notes || ''
+            });
+        }
+
+        // Create sub-orders for each warehouse
+        const createdSubOrders = [];
+        let subOrderCounter = 1;
+
+        for (const [warehouseCode, items] of warehouseGroups) {
+            if (items.length === 0) continue;
+
+            // Find the warehouse document
+            const warehouse = await Warehouse.findOne({ warehouseCode });
+            if (!warehouse) {
+                logger.warn(`Warehouse not found for code: ${warehouseCode}. Skipping sub-order creation.`);
+                continue;
+            }
+
+            // Generate sub-order number
+            const subOrderNumber = OrderIdManager.generateSubOrderId(order.orderNumber, warehouseCode, subOrderCounter);
+
+            // Determine material category for the warehouse
+            let materialCategory = 'Other';
+            switch (warehouseCode) {
+                case 'W1':
+                    materialCategory = 'Aggregates';
+                    break;
+                case 'W2':
+                    materialCategory = 'Bricks & Blocks';
+                    break;
+                case 'W3':
+                    materialCategory = 'Steel & Reinforcement';
+                    break;
+                case 'WM':
+                    materialCategory = 'Tools & Equipment';
+                    break;
+            }
+
+            const subOrder = new SubOrder({
+                subOrderNumber,
+                mainOrderNumber: order.orderNumber,
+                mainOrderId: order._id,
+                warehouseId: warehouse._id,
+                warehouseCode,
+                materialCategory,
+                items: items.map(item => ({
+                    materialId: item.inventory,
+                    materialName: item.name,
+                    categoryId: item.categoryId,
+                    inventoryItemId: item.inventory,
+                    qty: item.quantity,
+                    unitPrice: item.unitPrice,
+                    totalPrice: item.totalPrice,
+                    notes: item.notes
+                })),
+                totalAmount: items.reduce((sum, item) => sum + item.totalPrice, 0),
+                scheduledAt: order.delivery?.estimatedDate || new Date(Date.now() + 24 * 60 * 60 * 1000), // Default to tomorrow
+                scheduledTime: '09:00',
+                estimatedDuration: Math.max(30, items.length * 10), // 30 min minimum, 10 min per item
+                status: 'pending',
+                createdBy: req.user._id,
+                assignedTo: null // Will be assigned by warehouse manager
+            });
+
+            await subOrder.save();
+            createdSubOrders.push(subOrder);
+            subOrderCounter++;
+
+            logger.info(`Sub-order created: ${subOrderNumber} for warehouse ${warehouseCode} with ${items.length} items`);
+        }
+
         // Update order status to Confirmed
         order.status = 'Confirmed';
         order.approvedBy = req.user._id;
@@ -912,7 +1040,7 @@ router.patch('/:id/approve', authorize('admin', 'warehouse', 'cashier'), async (
 
         await order.save();
 
-        // Create notification for customer
+        // Create notification for customer about approval
         await Notification.create({
             toUserId: order.customer._id,
             type: 'ORDER_STATUS_CHANGE',
@@ -923,9 +1051,34 @@ router.patch('/:id/approve', authorize('admin', 'warehouse', 'cashier'), async (
                 previousStatus: 'Pending Approval',
                 newStatus: 'Confirmed',
                 approvedBy: req.user.fullName,
-                approvedAt: order.approvedAt
+                approvedAt: order.approvedAt,
+                subOrdersCreated: createdSubOrders.length,
+                warehousesInvolved: Array.from(warehouseGroups.keys())
             }
         });
+
+        // Send notifications to relevant warehouses about their sub-orders
+        for (const subOrder of createdSubOrders) {
+            await Notification.create({
+                toRole: 'warehouse',
+                warehouseCode: subOrder.warehouseCode,
+                type: 'SUB_ORDER_ASSIGNED',
+                message: `New sub-order #${subOrder.subOrderNumber} assigned to your warehouse`,
+                meta: {
+                    subOrderId: subOrder._id,
+                    subOrderNumber: subOrder.subOrderNumber,
+                    mainOrderNumber: order.orderNumber,
+                    customerName: order.customer.fullName,
+                    itemCount: subOrder.items.length,
+                    totalAmount: subOrder.totalAmount,
+                    scheduledDate: subOrder.scheduledAt,
+                    warehouseCode: subOrder.warehouseCode,
+                    materialCategory: subOrder.materialCategory
+                }
+            });
+
+            logger.info(`Warehouse notification sent for sub-order ${subOrder.subOrderNumber} to ${subOrder.warehouseCode}`);
+        }
 
         // Send email confirmation to customer
         try {

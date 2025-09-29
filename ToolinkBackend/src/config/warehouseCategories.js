@@ -162,6 +162,73 @@ class WarehouseCategoryUtils {
         const categories = this.getLegacyCategoriesForWarehouse(warehouseCode);
         return categories.includes(categoryName);
     }
+
+    // Get category ID by material name (smart matching)
+    static getCategoryIdByMaterial(warehouseCode, materialName) {
+        const categories = this.getCategoriesForWarehouse(warehouseCode);
+        const materialLower = materialName.toLowerCase();
+
+        // Try exact name matching first
+        for (const category of categories) {
+            if (category.name.toLowerCase().includes(materialLower) ||
+                materialLower.includes(category.name.toLowerCase())) {
+                return category.id;
+            }
+        }
+
+        // Try keyword matching for common materials
+        const materialKeywords = {
+            'W1': {
+                'sand': 'W1-002',
+                'fine': 'W1-002',
+                'river': 'W1-005',
+                'aggregate': 'W1-008',
+                'stone': 'W1-010',
+                'chip': 'W1-010',
+                'gravel': 'W1-009'
+            },
+            'W2': {
+                'brick': 'W2-004',
+                'clay': 'W2-004',
+                'block': 'W2-002',
+                'cement': 'W2-002',
+                'solid': 'W2-002',
+                'hollow': 'W2-003',
+                'masonry': 'W2-008'
+            },
+            'W3': {
+                '6mm': 'W3-002',
+                '8mm': 'W3-003',
+                '10mm': 'W3-004',
+                '12mm': 'W3-005',
+                '16mm': 'W3-006',
+                '20mm': 'W3-007',
+                '25mm': 'W3-008',
+                'rod': 'W3-001',
+                'steel': 'W3-001',
+                'wire': 'W3-009',
+                'mesh': 'W3-010'
+            },
+            'WM': {
+                'drill': 'WM-004',
+                'grinder': 'WM-011',
+                'tool': 'WM-001',
+                'cement': 'WM-012',
+                'paint': 'WM-013',
+                'hardware': 'WM-018'
+            }
+        };
+
+        const warehouseKeywords = materialKeywords[warehouseCode] || {};
+        for (const [keyword, categoryId] of Object.entries(warehouseKeywords)) {
+            if (materialLower.includes(keyword)) {
+                return categoryId;
+            }
+        }
+
+        // Default to first category of the warehouse
+        return categories.length > 0 ? categories[0].id : `${warehouseCode}-001`;
+    }
 }
 
 export { WAREHOUSE_CATEGORY_SYSTEM, WarehouseCategoryUtils };
