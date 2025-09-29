@@ -22,11 +22,47 @@ const orderSchema = new mongoose.Schema({
             ref: 'Inventory',
             required: true
         },
+        materialName: {
+            type: String,
+            required: true
+        },
         quantity: {
             type: Number,
             required: true,
             min: 1
         },
+        warehouseId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Warehouse'
+        },
+        warehouseCode: {
+            type: String,
+            enum: ['W1', 'W2', 'W3', 'WM']
+        },
+        categoryId: {
+            type: String,
+            validate: {
+                validator: function (value) {
+                    if (!value) return true; // Optional field
+                    return /^(W1|W2|W3|WM)-\d{3}$/.test(value);
+                },
+                message: 'Category ID must follow format: W1-001, W2-005, etc.'
+            }
+        },
+        subOrderId: {
+            type: String,
+            // Generate unique sub-order ID for each item
+            default: function () {
+                return `SO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            }
+        },
+        status: {
+            type: String,
+            enum: ['pending', 'scheduled', 'prepared', 'dispatched', 'delivered', 'failed', 'rescheduled'],
+            default: 'pending'
+        },
+        scheduledAt: Date,
+        scheduledTime: String,
         notes: String
     }],
     status: {

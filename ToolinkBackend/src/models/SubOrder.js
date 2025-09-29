@@ -90,6 +90,15 @@ const subOrderSchema = new mongoose.Schema({
             required: true,
             min: 1
         },
+        // Links back to original order item
+        originalSubOrderId: {
+            type: String,
+            // This is the subOrderId from the main order's items array
+        },
+        orderItemId: {
+            type: mongoose.Schema.Types.ObjectId,
+            // Reference to the specific item in the main order's items array
+        }
 
     }],
 

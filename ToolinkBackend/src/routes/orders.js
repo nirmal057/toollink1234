@@ -2461,6 +2461,16 @@ async function generateOrderPDF(orderData, type) {
 router.get('/sub-orders/warehouse/:warehouseCode', authenticateToken, async (req, res) => {
     try {
         const { warehouseCode } = req.params;
+        const {
+            page = 1,
+            limit = 50,
+            status,
+            dateRange,
+            startDate,
+            endDate,
+            materialCategory,
+            sort = '-createdAt'
+        } = req.query;
 
         // Validate warehouse code
         if (!['W1', 'W2', 'W3', 'WM'].includes(warehouseCode)) {
@@ -2478,34 +2488,174 @@ router.get('/sub-orders/warehouse/:warehouseCode', authenticateToken, async (req
             });
         }
 
-        // Fetch sub-orders for this warehouse code
-        const subOrders = await SubOrder.find({ warehouseCode: warehouseCode })
-            .populate('mainOrderId', 'orderNumber customerId requestedDeliveryDate')
-            .populate({
-                path: 'mainOrderId',
-                populate: {
-                    path: 'customerId',
-                    select: 'fullName email username'
-                }
-            })
-            .populate('warehouseId', 'name location')
-            .populate('assignedTo', 'fullName username')
-            .sort({ createdAt: -1 });
+        // Build query filters
+        const query = { warehouseCode: warehouseCode };
 
-        // Get warehouse category name
-        const categoryNames = {
-            'WM': 'Tools & Equipment',
-            'W1': 'Sand & Aggregates',
-            'W2': 'Blocks & Masonry',
-            'W3': 'Steel & Metal'
+        // Status filter
+        if (status && status !== '') {
+            query.status = status;
+        }
+
+        // Material category filter
+        if (materialCategory && materialCategory !== '') {
+            query.materialCategory = materialCategory;
+        }
+
+        // Date range filtering
+        if (dateRange && dateRange !== 'all') {
+            const now = new Date();
+            let startOfRange, endOfRange;
+
+            switch (dateRange) {
+                case 'today':
+                    startOfRange = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    endOfRange = new Date(startOfRange);
+                    endOfRange.setDate(endOfRange.getDate() + 1);
+                    break;
+                case 'week':
+                    const startOfWeek = new Date(now);
+                    startOfWeek.setDate(now.getDate() - now.getDay());
+                    startOfWeek.setHours(0, 0, 0, 0);
+                    startOfRange = startOfWeek;
+                    endOfRange = new Date(startOfWeek);
+                    endOfRange.setDate(endOfRange.getDate() + 7);
+                    break;
+                case 'month':
+                    startOfRange = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endOfRange = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                    break;
+                default:
+                    // Custom date range
+                    if (startDate) {
+                        startOfRange = new Date(startDate);
+                    }
+                    if (endDate) {
+                        endOfRange = new Date(endDate);
+                        endOfRange.setHours(23, 59, 59, 999); // End of day
+                    }
+                    break;
+            }
+
+            if (startOfRange || endOfRange) {
+                query.createdAt = {};
+                if (startOfRange) query.createdAt.$gte = startOfRange;
+                if (endOfRange) query.createdAt.$lte = endOfRange;
+            }
+        } else if (startDate || endDate) {
+            // Manual date range
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const endDateTime = new Date(endDate);
+                endDateTime.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = endDateTime;
+            }
+        }
+
+        console.log(`Fetching sub-orders for ${warehouseCode} with query:`, query);
+
+        // Pagination options
+        const options = {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            sort: sort,
+            populate: [
+                {
+                    path: 'mainOrderId',
+                    select: 'orderNumber customerId requestedDeliveryDate',
+                    populate: {
+                        path: 'customerId',
+                        select: 'fullName email username'
+                    }
+                },
+                {
+                    path: 'warehouseId',
+                    select: 'name location warehouseCode'
+                },
+                {
+                    path: 'assignedTo',
+                    select: 'fullName username email'
+                }
+            ]
         };
+
+        // Execute paginated query
+        const result = await SubOrder.paginate(query, options);
+
+        // Get warehouse category name and details
+        const warehouseInfo = {
+            'WM': {
+                name: 'Tools & Equipment',
+                description: 'Main warehouse for tools, equipment and hardware',
+                color: 'blue'
+            },
+            'W1': {
+                name: 'Sand & Aggregates',
+                description: 'River sand, stones, and aggregate materials',
+                color: 'yellow'
+            },
+            'W2': {
+                name: 'Blocks & Masonry',
+                description: 'Bricks, blocks, cement and masonry materials',
+                color: 'orange'
+            },
+            'W3': {
+                name: 'Steel & Metal',
+                description: 'Steel bars, rods, metal sheets and reinforcement',
+                color: 'gray'
+            }
+        };
+
+        // Add additional statistics
+        const stats = {
+            totalSubOrders: result.totalDocs,
+            statusBreakdown: {},
+            recentActivity: result.docs.slice(0, 5).map(order => ({
+                id: order._id,
+                subOrderNumber: order.subOrderNumber,
+                status: order.status,
+                customerName: order.mainOrderId?.customerId?.fullName || 'Unknown',
+                createdAt: order.createdAt,
+                materialCategory: order.materialCategory
+            }))
+        };
+
+        // Calculate status breakdown
+        const allSubOrders = await SubOrder.find({ warehouseCode }).select('status');
+        allSubOrders.forEach(order => {
+            const status = order.status || 'unknown';
+            stats.statusBreakdown[status] = (stats.statusBreakdown[status] || 0) + 1;
+        });
+
+        logger.info(`Retrieved ${result.docs.length} sub-orders for warehouse ${warehouseCode}`);
 
         res.json({
             success: true,
             warehouseCode,
-            warehouseName: categoryNames[warehouseCode],
-            subOrders,
-            total: subOrders.length
+            warehouseName: warehouseInfo[warehouseCode]?.name || 'Unknown Warehouse',
+            warehouseInfo: warehouseInfo[warehouseCode] || {},
+            subOrders: result.docs,
+            pagination: {
+                page: result.page,
+                pages: result.totalPages,
+                total: result.totalDocs,
+                hasNextPage: result.hasNextPage,
+                hasPrevPage: result.hasPrevPage,
+                limit: result.limit
+            },
+            stats,
+            filters: {
+                applied: {
+                    status: status || null,
+                    dateRange: dateRange || null,
+                    materialCategory: materialCategory || null
+                },
+                available: {
+                    statuses: ['pending', 'scheduled', 'prepared', 'dispatched', 'delivered', 'failed', 'rescheduled'],
+                    dateRanges: ['today', 'week', 'month', 'all'],
+                    materialCategories: ['Blocks & Masonry', 'Aggregates', 'Steel & Reinforcement', 'Tools & Equipment']
+                }
+            }
         });
 
     } catch (error) {
@@ -2513,7 +2663,427 @@ router.get('/sub-orders/warehouse/:warehouseCode', authenticateToken, async (req
         res.status(500).json({
             success: false,
             error: 'Failed to fetch warehouse sub-orders',
-            errorType: 'FETCH_WAREHOUSE_SUBORDERS_ERROR'
+            errorType: 'FETCH_WAREHOUSE_SUBORDERS_ERROR',
+            details: error.message
+        });
+    }
+});
+
+// Get warehouse items from Order collection (NEW APPROACH - from orders.items)
+router.get('/warehouse-items/my-warehouse', authenticateToken, async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 50,
+            status,
+            dateRange,
+            startDate,
+            endDate,
+            materialCategory,
+            sort = '-createdAt'
+        } = req.query;
+
+        // Get user's warehouse code
+        let userWarehouseCode = req.user.warehouseCode;
+
+        // Fallback: determine warehouse from email if warehouseCode is missing
+        if (!userWarehouseCode && req.user.email) {
+            const emailToWarehouseCode = {
+                'house1@toollink.com': 'W1',
+                'house2@toollink.com': 'W2',
+                'house3@toollink.com': 'W3',
+                'main_house@toollink.com': 'WM'
+            };
+            userWarehouseCode = emailToWarehouseCode[req.user.email];
+        }
+
+        if (!userWarehouseCode) {
+            return res.status(400).json({
+                success: false,
+                error: 'No warehouse assigned to your account. Please contact administrator.',
+                errorType: 'NO_WAREHOUSE_ASSIGNED'
+            });
+        }
+
+        // Build match pipeline for aggregation
+        const matchStage = {
+            'items.warehouseCode': userWarehouseCode,
+            status: { $in: ['Confirmed', 'confirmed', 'processing', 'shipped', 'delivered'] }
+        };
+
+        // Date range filtering
+        if (dateRange && dateRange !== 'all') {
+            const now = new Date();
+            let startOfRange, endOfRange;
+
+            switch (dateRange) {
+                case 'today':
+                    startOfRange = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    endOfRange = new Date(startOfRange);
+                    endOfRange.setDate(endOfRange.getDate() + 1);
+                    break;
+                case 'week':
+                    const startOfWeek = new Date(now);
+                    startOfWeek.setDate(now.getDate() - now.getDay());
+                    startOfWeek.setHours(0, 0, 0, 0);
+                    startOfRange = startOfWeek;
+                    endOfRange = new Date(startOfWeek);
+                    endOfRange.setDate(endOfRange.getDate() + 7);
+                    break;
+                case 'month':
+                    startOfRange = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endOfRange = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                    break;
+            }
+
+            if (startOfRange || endOfRange) {
+                matchStage.createdAt = {};
+                if (startOfRange) matchStage.createdAt.$gte = startOfRange;
+                if (endOfRange) matchStage.createdAt.$lte = endOfRange;
+            }
+        } else if (startDate || endDate) {
+            matchStage.createdAt = {};
+            if (startDate) matchStage.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const endDateTime = new Date(endDate);
+                endDateTime.setHours(23, 59, 59, 999);
+                matchStage.createdAt.$lte = endDateTime;
+            }
+        }
+
+        console.log(`Fetching warehouse items for user ${req.user.email} warehouse ${userWarehouseCode} from Order.items`);
+
+        // Aggregation pipeline to unwind items and filter by warehouse
+        const pipeline = [
+            { $match: matchStage },
+            { $unwind: '$items' },
+            { $match: { 'items.warehouseCode': userWarehouseCode } },
+            // Status filter for items
+            ...(status && status !== '' ? [{ $match: { 'items.status': status } }] : []),
+            // Populate customer information
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'customer',
+                    foreignField: '_id',
+                    as: 'customerInfo'
+                }
+            },
+            { $unwind: '$customerInfo' },
+            // Populate inventory information
+            {
+                $lookup: {
+                    from: 'inventories',
+                    localField: 'items.inventory',
+                    foreignField: '_id',
+                    as: 'inventoryInfo'
+                }
+            },
+            { $unwind: '$inventoryInfo' },
+            // Project final structure similar to SubOrder
+            {
+                $project: {
+                    _id: '$items.subOrderId',
+                    subOrderNumber: '$items.subOrderId',
+                    mainOrderId: {
+                        _id: '$_id',
+                        orderNumber: '$orderNumber',
+                        customerId: {
+                            fullName: '$customerInfo.fullName',
+                            email: '$customerInfo.email',
+                            username: '$customerInfo.username'
+                        },
+                        requestedDeliveryDate: '$delivery.estimatedDate'
+                    },
+                    warehouseCode: '$items.warehouseCode',
+                    materialCategory: '$inventoryInfo.category',
+                    items: [{
+                        materialId: '$items.inventory',
+                        materialName: '$items.materialName',
+                        categoryId: '$items.categoryId',
+                        quantity: '$items.quantity',
+                        unitPrice: 0, // No pricing needed
+                        totalPrice: 0, // No pricing needed
+                        _id: '$items._id'
+                    }],
+                    totalAmount: 0, // No pricing needed
+                    scheduledAt: '$items.scheduledAt',
+                    scheduledTime: '$items.scheduledTime',
+                    status: '$items.status',
+                    createdAt: '$createdAt'
+                }
+            },
+            { $sort: { createdAt: -1 } }
+        ];
+
+        // Execute aggregation with pagination
+        const aggregationOptions = [
+            ...pipeline,
+            { $skip: (parseInt(page) - 1) * parseInt(limit) },
+            { $limit: parseInt(limit) }
+        ];
+
+        const warehouseItems = await Order.aggregate(aggregationOptions);
+
+        // Get total count
+        const totalCountPipeline = [
+            ...pipeline,
+            { $count: 'total' }
+        ];
+        const totalCountResult = await Order.aggregate(totalCountPipeline);
+        const totalDocs = totalCountResult.length > 0 ? totalCountResult[0].total : 0;
+
+        // Calculate pagination info
+        const totalPages = Math.ceil(totalDocs / parseInt(limit));
+        const currentPage = parseInt(page);
+
+        // Get warehouse info
+        const warehouseInfo = {
+            'WM': { name: 'Tools & Equipment', color: 'yellow' },
+            'W1': { name: 'Sand & Aggregates', color: 'blue' },
+            'W2': { name: 'Blocks & Masonry', color: 'orange' },
+            'W3': { name: 'Steel & Metal', color: 'gray' }
+        };
+
+        // Calculate statistics
+        const stats = {
+            totalItems: totalDocs,
+            statusBreakdown: {},
+            recentActivity: warehouseItems.slice(0, 5).map(item => ({
+                id: item._id,
+                subOrderNumber: item.subOrderNumber,
+                status: item.status,
+                customerName: item.mainOrderId?.customerId?.fullName || 'Unknown',
+                createdAt: item.createdAt,
+                materialCategory: item.materialCategory
+            }))
+        };
+
+        // Calculate status breakdown
+        const statusPipeline = [
+            { $match: { 'items.warehouseCode': userWarehouseCode } },
+            { $unwind: '$items' },
+            { $match: { 'items.warehouseCode': userWarehouseCode } },
+            { $group: { _id: '$items.status', count: { $sum: 1 } } }
+        ];
+        const statusBreakdown = await Order.aggregate(statusPipeline);
+        statusBreakdown.forEach(item => {
+            stats.statusBreakdown[item._id || 'unknown'] = item.count;
+        });
+
+        res.json({
+            success: true,
+            warehouseCode: userWarehouseCode,
+            warehouseName: warehouseInfo[userWarehouseCode]?.name || 'Unknown Warehouse',
+            warehouseInfo: warehouseInfo[userWarehouseCode] || {},
+            subOrders: warehouseItems, // Using same structure for compatibility
+            pagination: {
+                page: currentPage,
+                pages: totalPages,
+                total: totalDocs,
+                hasNextPage: currentPage < totalPages,
+                hasPrevPage: currentPage > 1,
+                limit: parseInt(limit)
+            },
+            stats,
+            userInfo: {
+                email: req.user.email,
+                role: req.user.role,
+                warehouseCode: userWarehouseCode
+            },
+            dataSource: 'Order.items', // Indicate data source
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        logger.error('Get warehouse items from Order error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch warehouse items from orders',
+            errorType: 'FETCH_WAREHOUSE_ITEMS_ERROR',
+            details: error.message
+        });
+    }
+});
+
+// Get sub-orders based on user's warehouse (auto-detect warehouse from login)
+router.get('/sub-orders/my-warehouse', authenticateToken, async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 50,
+            status,
+            dateRange,
+            startDate,
+            endDate,
+            materialCategory,
+            sort = '-createdAt'
+        } = req.query;
+
+        // Get user's warehouse code
+        let userWarehouseCode = req.user.warehouseCode;
+
+        // Fallback: determine warehouse from email if warehouseCode is missing
+        if (!userWarehouseCode && req.user.email) {
+            const emailToWarehouseCode = {
+                'house1@toollink.com': 'W1',
+                'house2@toollink.com': 'W2',
+                'house3@toollink.com': 'W3',
+                'main_house@toollink.com': 'WM'
+            };
+            userWarehouseCode = emailToWarehouseCode[req.user.email];
+        }
+
+        if (!userWarehouseCode) {
+            return res.status(400).json({
+                success: false,
+                error: 'No warehouse assigned to your account. Please contact administrator.',
+                errorType: 'NO_WAREHOUSE_ASSIGNED'
+            });
+        }
+
+        // Build query filters - always filter by user's warehouse
+        const query = { warehouseCode: userWarehouseCode };
+
+        // Status filter
+        if (status && status !== '') {
+            query.status = status;
+        }
+
+        // Material category filter
+        if (materialCategory && materialCategory !== '') {
+            query.materialCategory = materialCategory;
+        }
+
+        // Date range filtering
+        if (dateRange && dateRange !== 'all') {
+            const now = new Date();
+            let startOfRange, endOfRange;
+
+            switch (dateRange) {
+                case 'today':
+                    startOfRange = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    endOfRange = new Date(startOfRange);
+                    endOfRange.setDate(endOfRange.getDate() + 1);
+                    break;
+                case 'week':
+                    const startOfWeek = new Date(now);
+                    startOfWeek.setDate(now.getDate() - now.getDay());
+                    startOfWeek.setHours(0, 0, 0, 0);
+                    startOfRange = startOfWeek;
+                    endOfRange = new Date(startOfWeek);
+                    endOfRange.setDate(endOfRange.getDate() + 7);
+                    break;
+                case 'month':
+                    startOfRange = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endOfRange = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                    break;
+            }
+
+            if (startOfRange || endOfRange) {
+                query.createdAt = {};
+                if (startOfRange) query.createdAt.$gte = startOfRange;
+                if (endOfRange) query.createdAt.$lte = endOfRange;
+            }
+        } else if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const endDateTime = new Date(endDate);
+                endDateTime.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = endDateTime;
+            }
+        }
+
+        console.log(`Auto-fetching sub-orders for user ${req.user.email} warehouse ${userWarehouseCode} with query:`, query);
+
+        // Pagination options
+        const options = {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            sort: sort,
+            populate: [
+                {
+                    path: 'mainOrderId',
+                    select: 'orderNumber customerId requestedDeliveryDate totalAmount',
+                    populate: {
+                        path: 'customerId',
+                        select: 'fullName email username phone'
+                    }
+                },
+                {
+                    path: 'warehouseId',
+                    select: 'name location warehouseCode'
+                },
+                {
+                    path: 'assignedTo',
+                    select: 'fullName username email'
+                }
+            ]
+        };
+
+        // Execute paginated query
+        const result = await SubOrder.paginate(query, options);
+
+        // Get warehouse info
+        const warehouseInfo = {
+            'WM': { name: 'Tools & Equipment', color: 'blue' },
+            'W1': { name: 'Sand & Aggregates', color: 'yellow' },
+            'W2': { name: 'Blocks & Masonry', color: 'orange' },
+            'W3': { name: 'Steel & Metal', color: 'gray' }
+        };
+
+        // Calculate statistics
+        const stats = {
+            totalSubOrders: result.totalDocs,
+            statusBreakdown: {},
+            recentActivity: result.docs.slice(0, 5).map(order => ({
+                id: order._id,
+                subOrderNumber: order.subOrderNumber,
+                status: order.status,
+                customerName: order.mainOrderId?.customerId?.fullName || 'Unknown',
+                createdAt: order.createdAt,
+                materialCategory: order.materialCategory
+            }))
+        };
+
+        // Calculate status breakdown
+        const allSubOrders = await SubOrder.find({ warehouseCode: userWarehouseCode }).select('status');
+        allSubOrders.forEach(order => {
+            const status = order.status || 'unknown';
+            stats.statusBreakdown[status] = (stats.statusBreakdown[status] || 0) + 1;
+        });
+
+        res.json({
+            success: true,
+            warehouseCode: userWarehouseCode,
+            warehouseName: warehouseInfo[userWarehouseCode]?.name || 'Unknown Warehouse',
+            warehouseInfo: warehouseInfo[userWarehouseCode] || {},
+            subOrders: result.docs,
+            pagination: {
+                page: result.page,
+                pages: result.totalPages,
+                total: result.totalDocs,
+                hasNextPage: result.hasNextPage,
+                hasPrevPage: result.hasPrevPage,
+                limit: result.limit
+            },
+            stats,
+            userInfo: {
+                email: req.user.email,
+                role: req.user.role,
+                warehouseCode: userWarehouseCode
+            },
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        logger.error('Get user warehouse sub-orders error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch sub-orders for your warehouse',
+            errorType: 'FETCH_USER_WAREHOUSE_SUBORDERS_ERROR',
+            details: error.message
         });
     }
 });
@@ -2549,7 +3119,29 @@ router.get('/sub-orders', authenticateToken, async (req, res) => {
 
         // Role-based filtering
         if (req.user.role === 'warehouse') {
-            query.warehouseCode = req.user.warehouseCode;
+            // For warehouse users, force filter to their warehouse
+            let userWarehouseCode = req.user.warehouseCode;
+
+            // Fallback mapping if warehouseCode is not set
+            if (!userWarehouseCode && req.user.email) {
+                const emailToWarehouseCode = {
+                    'house1@toollink.com': 'W1',
+                    'house2@toollink.com': 'W2',
+                    'house3@toollink.com': 'W3',
+                    'main_house@toollink.com': 'WM'
+                };
+                userWarehouseCode = emailToWarehouseCode[req.user.email];
+            }
+
+            if (userWarehouseCode) {
+                query.warehouseCode = userWarehouseCode;
+            } else {
+                return res.status(403).json({
+                    success: false,
+                    error: 'No warehouse assigned to your account',
+                    errorType: 'NO_WAREHOUSE_ACCESS'
+                });
+            }
         }
 
         const options = {
@@ -2559,14 +3151,14 @@ router.get('/sub-orders', authenticateToken, async (req, res) => {
             populate: [
                 {
                     path: 'mainOrderId',
-                    select: 'orderNumber customerId requestedDeliveryDate',
+                    select: 'orderNumber customerId requestedDeliveryDate totalAmount',
                     populate: {
                         path: 'customerId',
-                        select: 'fullName email username'
+                        select: 'fullName email username phone'
                     }
                 },
-                { path: 'warehouseId', select: 'name location' },
-                { path: 'assignedTo', select: 'fullName username' }
+                { path: 'warehouseId', select: 'name location warehouseCode' },
+                { path: 'assignedTo', select: 'fullName username email' }
             ]
         };
 
@@ -2581,7 +3173,10 @@ router.get('/sub-orders', authenticateToken, async (req, res) => {
                 total: result.totalDocs,
                 hasNextPage: result.hasNextPage,
                 hasPrevPage: result.hasPrevPage
-            }
+            },
+            appliedFilters: { warehouseCode, status, startDate, endDate },
+            userRole: req.user.role,
+            timestamp: new Date().toISOString()
         });
 
     } catch (error) {
@@ -2590,6 +3185,66 @@ router.get('/sub-orders', authenticateToken, async (req, res) => {
             success: false,
             error: 'Failed to fetch sub-orders',
             errorType: 'FETCH_SUBORDERS_ERROR'
+        });
+    }
+});
+
+// Debug endpoint to check warehouse assignment and data
+router.get('/debug/warehouse-data', authenticateToken, async (req, res) => {
+    try {
+        const userInfo = {
+            id: req.user._id,
+            email: req.user.email,
+            role: req.user.role,
+            warehouseCode: req.user.warehouseCode
+        };
+
+        // Get warehouse assignment from email mapping
+        const emailToWarehouseCode = {
+            'house1@toollink.com': 'W1',
+            'house2@toollink.com': 'W2',
+            'house3@toollink.com': 'W3',
+            'main_house@toollink.com': 'WM'
+        };
+        const mappedWarehouse = emailToWarehouseCode[req.user.email];
+
+        // Count sub-orders for each warehouse
+        const warehouseCounts = {};
+        for (const code of ['W1', 'W2', 'W3', 'WM']) {
+            warehouseCounts[code] = await SubOrder.countDocuments({ warehouseCode: code });
+        }
+
+        // Count user's sub-orders
+        const userWarehouseCode = req.user.warehouseCode || mappedWarehouse;
+        const userSubOrderCount = userWarehouseCode ?
+            await SubOrder.countDocuments({ warehouseCode: userWarehouseCode }) : 0;
+
+        // Get sample sub-orders for user's warehouse
+        const sampleSubOrders = userWarehouseCode ?
+            await SubOrder.find({ warehouseCode: userWarehouseCode })
+                .limit(3)
+                .select('subOrderNumber warehouseCode status createdAt')
+                .sort({ createdAt: -1 }) : [];
+
+        res.json({
+            success: true,
+            debug: {
+                userInfo,
+                mappedWarehouse,
+                effectiveWarehouse: userWarehouseCode,
+                warehouseCounts,
+                userSubOrderCount,
+                sampleSubOrders,
+                timestamp: new Date().toISOString()
+            }
+        });
+
+    } catch (error) {
+        logger.error('Debug warehouse data error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch debug data',
+            details: error.message
         });
     }
 });
