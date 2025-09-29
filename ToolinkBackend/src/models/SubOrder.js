@@ -5,7 +5,25 @@ const subOrderSchema = new mongoose.Schema({
     subOrderNumber: {
         type: String,
         unique: true,
-        required: true
+        required: true,
+        validate: {
+            validator: function (value) {
+                // Validate format: ORD-YYYY-NNNNNNNNN-WH-SSS
+                return /^ORD-\d{4}-\d{9}-(W1|W2|W3|WM)-\d{3}$/.test(value);
+            },
+            message: 'Sub order number must follow format: ORD-YYYY-NNNNNNNNN-WH-SSS'
+        }
+    },
+    // Enhanced linking to main order
+    mainOrderNumber: {
+        type: String,
+        required: true,
+        validate: {
+            validator: function (value) {
+                return /^ORD-\d{4}-\d{9}$/.test(value);
+            },
+            message: 'Main order number must follow format: ORD-YYYY-NNNNNNNNN'
+        }
     },
     mainOrderId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -50,6 +68,22 @@ const subOrderSchema = new mongoose.Schema({
         materialName: {
             type: String,
             required: true
+        },
+        // Link to inventory category ID system
+        categoryId: {
+            type: String,
+            validate: {
+                validator: function (value) {
+                    if (!value) return true; // Optional field
+                    return /^(W1|W2|W3|WM)-\d{3}$/.test(value);
+                },
+                message: 'Category ID must follow format: W1-001, W2-005, etc.'
+            }
+        },
+        // Link to inventory item if allocated
+        inventoryItemId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Inventory'
         },
         qty: {
             type: Number,

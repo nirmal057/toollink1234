@@ -13,6 +13,8 @@ import { authorize, authenticateToken } from '../middleware/auth.js';
 import OrderService from '../services/OrderService.js';
 import logger from '../utils/logger.js';
 import { sendEmail } from '../utils/emailService.js';
+import OrderIdManager from '../config/orderIdManager.js';
+import { WarehouseCategoryUtils } from '../config/warehouseCategories.js';
 
 const router = express.Router();
 
@@ -1153,6 +1155,46 @@ router.post('/main-order', [
 
         // Calculate total amount
         orderData.totalAmount = orderData.items.reduce((total, item) => total + item.totalPrice, 0);
+
+        // 🆕 ENHANCED ORDER CREATION WITH ID SYSTEM
+
+        // Generate main order ID using new system
+        const mainOrderId = OrderIdManager.generateMainOrderId();
+        orderData.orderNumber = mainOrderId;
+
+        // Enrich items with category information
+        const enrichedItems = await Promise.all(orderData.items.map(async (item) => {
+            const material = materials.find(m => m._id.toString() === item.materialId.toString());
+
+            // Get category ID from warehouse category system
+            const categoryInfo = WarehouseCategoryUtils.getCategoryByName(material.category);
+
+            return {
+                ...item,
+                materialName: material.name,
+                category: material.category,
+                categoryId: categoryInfo?.id,
+                warehouseCode: OrderIdManager.determineWarehouseForItem({
+                    categoryId: categoryInfo?.id,
+                    category: material.category
+                })
+            };
+        }));
+
+        // Group items by warehouse for sub-order creation
+        const warehouseGroups = OrderIdManager.groupItemsByWarehouse(enrichedItems);
+
+        // Determine order type
+        const warehouseCodes = Object.keys(warehouseGroups);
+        orderData.orderType = warehouseCodes.length > 1 ? 'multi-warehouse' : 'single-warehouse';
+
+        // Create warehouse breakdown for main order
+        orderData.warehouseBreakdown = warehouseCodes.map(warehouseCode => ({
+            warehouseCode,
+            subOrderId: OrderIdManager.generateSubOrderId(mainOrderId, warehouseCode, 1),
+            itemCount: warehouseGroups[warehouseCode].items.length,
+            totalAmount: warehouseGroups[warehouseCode].totalAmount
+        }));
 
         // Create main order using OrderService
         const orderService = new OrderService();

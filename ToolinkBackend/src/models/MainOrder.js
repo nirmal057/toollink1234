@@ -5,8 +5,30 @@ const mainOrderSchema = new mongoose.Schema({
     orderNumber: {
         type: String,
         unique: true,
-        required: true
+        required: true,
+        validate: {
+            validator: function (value) {
+                // Validate format: ORD-YYYY-NNNNNN
+                return /^ORD-\d{4}-\d{9}$/.test(value);
+            },
+            message: 'Order number must follow format: ORD-YYYY-NNNNNNNNN'
+        }
     },
+    // Enhanced tracking fields
+    orderType: {
+        type: String,
+        enum: ['single-warehouse', 'multi-warehouse'],
+        default: 'single-warehouse'
+    },
+    warehouseBreakdown: [{
+        warehouseCode: {
+            type: String,
+            enum: ['W1', 'W2', 'W3', 'WM']
+        },
+        subOrderId: String,
+        itemCount: Number,
+        totalAmount: Number
+    }],
     customerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

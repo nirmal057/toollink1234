@@ -172,6 +172,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/orders', orderRoutes);
+
+// Enhanced order routes with warehouse-category ID system
+import enhancedOrderRoutes from './src/routes/enhancedOrders.js';
+app.use('/api/enhanced-orders', enhancedOrderRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/drivers', driversRoutes);
 app.use('/api/notifications', notificationRoutes);
