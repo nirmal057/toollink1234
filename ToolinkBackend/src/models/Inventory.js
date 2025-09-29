@@ -54,6 +54,7 @@ const inventorySchema = new mongoose.Schema({
             '20mm Steel Rods',
             'Steel Wire',
             'Wire Mesh',
+            'Steel Mesh',
             'Angle Iron',
             'Steel Plates',
 
@@ -64,6 +65,7 @@ const inventorySchema = new mongoose.Schema({
             'Hand Tools',
             'Measuring Tools',
             'Safety Equipment',
+            'Safety Gear',
             'Hardware',
             'Electrical Tools',
             'Cutting Tools',
@@ -75,6 +77,11 @@ const inventorySchema = new mongoose.Schema({
             'Plumbing Supplies',
             'Tiles & Ceramics',
             'Roofing Materials',
+            'Hardware & Fasteners',
+            'Tools & Equipment',
+            'Bricks',
+            'Masonry Blocks',
+            'Stones',
             'Materials',
             'Other'
         ]
@@ -83,13 +90,15 @@ const inventorySchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        enum: [
-            'warehouse1',  // River sand/soil
-            'warehouse2',  // Bricks
-            'warehouse3',  // Metals
-            'main_warehouse' // Tools & Equipment
-        ],
-        default: 'main_warehouse'
+        enum: ['W1', 'W2', 'W3', 'WM'],
+        default: 'WM'
+    },
+    warehouseCode: {
+        type: String,
+        required: true,
+        trim: true,
+        enum: ['W1', 'W2', 'W3', 'WM'],
+        default: 'WM'
     },
     sku: {
         type: String,
@@ -113,7 +122,7 @@ const inventorySchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        enum: ['pieces', 'kg', 'liters', 'meters', 'boxes', 'sets', 'pairs', 'rolls', 'sheets', 'units']
+        enum: ['pieces', 'kg', 'liters', 'meters', 'boxes', 'sets', 'pairs', 'rolls', 'sheets', 'units', 'cubic_ft', 'bags']
     },
     threshold: {
         type: Number,

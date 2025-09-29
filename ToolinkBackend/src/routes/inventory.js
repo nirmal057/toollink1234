@@ -6,25 +6,87 @@ import logger from '../utils/logger.js';
 
 const router = express.Router();
 
-// User to warehouse mapping
+// User to warehouse mapping (using codes directly)
 const userWarehouseMap = {
-    'house1@toollink.com': 'warehouse1',  // River sand/soil
-    'house2@toollink.com': 'warehouse2',  // Bricks
-    'house3@toollink.com': 'warehouse3',  // Metals
-    'main_house@toollink.com': 'main_warehouse' // Tools & Equipment
+    'house1@toollink.com': 'W1',  // River sand/soil
+    'house2@toollink.com': 'W2',  // Bricks
+    'house3@toollink.com': 'W3',  // Metals
+    'main_house@toollink.com': 'WM' // Tools & Equipment
+};
+
+// User to warehouse code mapping (same as above now)
+const userWarehouseCodeMap = {
+    'house1@toollink.com': 'W1',  // River sand/soil
+    'house2@toollink.com': 'W2',  // Bricks
+    'house3@toollink.com': 'W3',  // Metals
+    'main_house@toollink.com': 'WM' // Tools & Equipment
 };
 
 // Validation rules
 const inventoryValidation = [
     body('name').trim().isLength({ min: 1, max: 100 }).withMessage('Name is required and must be less than 100 characters'),
     body('category').isIn([
-        'Cement', 'Steel & Reinforcement', 'Paint & Chemicals', 'Electrical Items', 'Plumbing Supplies',
-        'Tools & Equipment', 'Hardware & Fasteners', 'Tiles & Ceramics', 'Roofing Materials',
-        'Safety Equipment', 'Sand & Aggregate', 'Bricks', 'Masonry Blocks', 'Stones', 'Materials'
+        // Main categories for admin users (simplified)
+        'Sand & Aggregate',
+        'Bricks & Masonry',
+        'Steel & Reinforcement',
+        'Tools & Equipment',
+        // Warehouse 1 - Sand & Aggregate Categories (detailed)
+        'Fine Sand',
+        'Medium Sand',
+        'Coarse Sand',
+        'River Sand',
+        'Washed Sand',
+        'M-Sand (Crushed Rock)',
+        'Aggregate',
+        'Gravel',
+        'Stone Chips',
+        // Warehouse 2 - Bricks & Masonry Categories (detailed)
+        'Solid Cement Blocks',
+        'Hollow Cement Blocks',
+        'Clay Bricks',
+        '4 Inch Blocks',
+        '6 Inch Blocks',
+        '8 Inch Blocks',
+        'Interlocking Pavers',
+        'Granite Slabs',
+        'Decorative Stones',
+        // Warehouse 3 - Steel & Reinforcement Categories (detailed)
+        '6mm Steel Rods',
+        '8mm Steel Rods',
+        '10mm Steel Rods',
+        '12mm Steel Rods',
+        '16mm Steel Rods',
+        '20mm Steel Rods',
+        '25mm Steel Rods',
+        'Steel Wire',
+        'Steel Mesh',
+        'Steel Plates',
+        'Angle Bars',
+        'Channel Bars',
+        // Main Warehouse - Tools & Equipment Categories (detailed)
+        'Hand Tools',
+        'Power Tools',
+        'Power Drills',
+        'Grinders',
+        'Saws',
+        'Welding Equipment',
+        'Measuring Tools',
+        'Safety Gear',
+        'Cutting Tools',
+        'Cement',
+        'Paint & Chemicals',
+        'Electrical Items',
+        'Plumbing Supplies',
+        'Tiles & Ceramics',
+        'Roofing Materials',
+        'Materials',
+        'Other'
     ]).withMessage('Invalid category'),
-    body('warehouse').isIn(['warehouse1', 'warehouse2', 'warehouse3', 'main_warehouse']).withMessage('Invalid warehouse'),
+    body('warehouse').optional().isIn(['W1', 'W2', 'W3', 'WM']).withMessage('Invalid warehouse'),
+    body('warehouseCode').optional().isIn(['W1', 'W2', 'W3', 'WM']).withMessage('Invalid warehouse code'),
     body('quantity').isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer'),
-    body('unit').isIn(['pieces', 'kg', 'liters', 'meters', 'boxes', 'sets', 'pairs', 'rolls', 'sheets', 'units']).withMessage('Invalid unit'),
+    body('unit').isIn(['pieces', 'kg', 'liters', 'meters', 'boxes', 'sets', 'pairs', 'rolls', 'sheets', 'units', 'cubic_ft']).withMessage('Invalid unit'),
     body('threshold').isInt({ min: 0 }).withMessage('Threshold must be a non-negative integer'),
     body('location').trim().isLength({ min: 1 }).withMessage('Location is required')
 ];
@@ -197,6 +259,27 @@ router.post('/', authenticateToken, authorize('admin', 'warehouse'), inventoryVa
             current_stock: req.body.quantity,
             min_stock_level: req.body.threshold
         };
+
+        // Auto-assign warehouse and warehouseCode if not provided and user is not admin
+        if (!itemData.warehouse && req.user.role !== 'admin') {
+            itemData.warehouse = userWarehouseMap[req.user.email] || 'WM';
+        }
+        if (!itemData.warehouseCode && req.user.role !== 'admin') {
+            itemData.warehouseCode = userWarehouseCodeMap[req.user.email] || 'WM';
+        }
+
+        // Ensure both warehouse and warehouseCode are set and match
+        if (!itemData.warehouse) {
+            itemData.warehouse = 'WM'; // Default to main warehouse
+        }
+        if (!itemData.warehouseCode) {
+            itemData.warehouseCode = itemData.warehouse; // Use warehouse value as code
+        }
+
+        // Ensure they match (now both use codes)
+        if (itemData.warehouse !== itemData.warehouseCode) {
+            itemData.warehouseCode = itemData.warehouse;
+        }
 
         const item = new Inventory(itemData);
         await item.save();

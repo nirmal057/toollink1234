@@ -65,6 +65,13 @@ const materialSchema = new mongoose.Schema({
         min: 0,
         default: 0
     },
+    warehouseCode: {
+        type: String,
+        required: true,
+        trim: true,
+        enum: ['W1', 'W2', 'W3', 'WM'],
+        default: 'WM'
+    },
     isActive: {
         type: Boolean,
         default: true
@@ -78,7 +85,7 @@ materialSchema.index({ category: 1, isActive: 1 });
 materialSchema.index({ name: 'text', description: 'text' });
 
 // Virtual for profit margin
-materialSchema.virtual('profitMargin').get(function() {
+materialSchema.virtual('profitMargin').get(function () {
     if (this.costPrice > 0) {
         return ((this.sellingPrice - this.costPrice) / this.costPrice) * 100;
     }
