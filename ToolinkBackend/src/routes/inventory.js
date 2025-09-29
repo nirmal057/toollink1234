@@ -166,10 +166,15 @@ router.get('/stats', authenticateToken, async (req, res) => {
 
         // Determine warehouse filter based on user
         let warehouseFilter = {};
+        let isWarehouseUser = false;
+        let userWarehouseCode = null;
+
         if (userRole === 'warehouse' && userEmail) {
             const userWarehouse = userWarehouseMap[userEmail];
             if (userWarehouse) {
                 warehouseFilter = { warehouse: userWarehouse };
+                isWarehouseUser = true;
+                userWarehouseCode = userWarehouse;
             }
         }
         // Admin users see all warehouses (no filter)
@@ -177,6 +182,27 @@ router.get('/stats', authenticateToken, async (req, res) => {
         console.log('User:', userEmail, 'Role:', userRole, 'Warehouse Filter:', warehouseFilter);
 
         const stats = await Inventory.getStatistics(warehouseFilter);
+
+        // If warehouse user, filter category distribution to show only their warehouse categories
+        if (isWarehouseUser && stats.warehouseCategoryDistribution) {
+            const userWarehouseCategoryStats = stats.warehouseCategoryDistribution
+                .filter(item => item._id.warehouse === userWarehouseCode)
+                .map(item => ({
+                    _id: item._id.category,
+                    count: item.count,
+                    totalStock: item.totalStock,
+                    warehouse: item._id.warehouse
+                }));
+
+            // Replace the general category distribution with warehouse-specific one
+            stats.categoryDistribution = userWarehouseCategoryStats;
+            stats.warehouseSpecific = true;
+            stats.warehouseCode = userWarehouseCode;
+        } else if (userRole === 'admin') {
+            // For admin, provide additional warehouse context
+            stats.warehouseSpecific = false;
+            stats.allWarehouses = true;
+        }
 
         res.json({
             success: true,
@@ -188,6 +214,107 @@ router.get('/stats', authenticateToken, async (req, res) => {
             success: false,
             error: 'Failed to fetch inventory statistics',
             errorType: 'FETCH_STATS_ERROR'
+        });
+    }
+});
+
+// Get warehouse categories - for warehouse users to see their specific categories
+router.get('/warehouse-categories', authenticateToken, async (req, res) => {
+    try {
+        const userEmail = req.user?.email;
+        const userRole = req.user?.role;
+
+        if (userRole === 'admin') {
+            // Admin gets all categories grouped by warehouse
+            const warehouseCategoryStats = await Inventory.aggregate([
+                { $match: { status: 'active' } },
+                {
+                    $group: {
+                        _id: {
+                            warehouse: '$warehouse',
+                            category: '$category'
+                        },
+                        count: { $sum: 1 },
+                        totalStock: { $sum: '$current_stock' },
+                        lowStockItems: {
+                            $sum: {
+                                $cond: [{ $lte: ['$current_stock', '$min_stock_level'] }, 1, 0]
+                            }
+                        }
+                    }
+                },
+                { $sort: { '_id.warehouse': 1, count: -1 } }
+            ]);
+
+            // Group by warehouse for easier frontend consumption
+            const warehouseGroups = {};
+            warehouseCategoryStats.forEach(item => {
+                const warehouse = item._id.warehouse;
+                if (!warehouseGroups[warehouse]) {
+                    warehouseGroups[warehouse] = [];
+                }
+                warehouseGroups[warehouse].push({
+                    category: item._id.category,
+                    count: item.count,
+                    totalStock: item.totalStock,
+                    lowStockItems: item.lowStockItems
+                });
+            });
+
+            return res.json({
+                success: true,
+                data: {
+                    userRole: 'admin',
+                    allWarehouses: warehouseGroups
+                }
+            });
+        } else if (userRole === 'warehouse' && userEmail) {
+            const userWarehouse = userWarehouseMap[userEmail];
+            if (!userWarehouse) {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Warehouse not assigned to user'
+                });
+            }
+
+            // Get categories only for this warehouse
+            const warehouseCategories = await Inventory.aggregate([
+                { $match: { warehouse: userWarehouse, status: 'active' } },
+                {
+                    $group: {
+                        _id: '$category',
+                        count: { $sum: 1 },
+                        totalStock: { $sum: '$current_stock' },
+                        lowStockItems: {
+                            $sum: {
+                                $cond: [{ $lte: ['$current_stock', '$min_stock_level'] }, 1, 0]
+                            }
+                        },
+                        avgStock: { $avg: '$current_stock' }
+                    }
+                },
+                { $sort: { count: -1 } }
+            ]);
+
+            return res.json({
+                success: true,
+                data: {
+                    userRole: 'warehouse',
+                    warehouse: userWarehouse,
+                    categories: warehouseCategories
+                }
+            });
+        } else {
+            return res.status(403).json({
+                success: false,
+                error: 'Unauthorized access to warehouse categories'
+            });
+        }
+    } catch (error) {
+        logger.error('Get warehouse categories error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch warehouse categories'
         });
     }
 });

@@ -287,6 +287,22 @@ inventorySchema.statics.getStatistics = async function (filter = {}) {
         { $sort: { count: -1 } }
     ]);
 
+    // Get warehouse-specific category distribution for better filtering
+    const warehouseCategoryStats = await this.aggregate([
+        { $match: { ...matchFilter, status: 'active' } },
+        {
+            $group: {
+                _id: {
+                    warehouse: '$warehouse',
+                    category: '$category'
+                },
+                count: { $sum: 1 },
+                totalStock: { $sum: '$current_stock' }
+            }
+        },
+        { $sort: { '_id.warehouse': 1, count: -1 } }
+    ]);
+
     const result = stats[0] || {
         totalItems: 0,
         activeItems: 0,
@@ -299,6 +315,7 @@ inventorySchema.statics.getStatistics = async function (filter = {}) {
 
     result.categories = categoryStats.length;
     result.categoryDistribution = categoryStats;
+    result.warehouseCategoryDistribution = warehouseCategoryStats;
 
     return result;
 };
