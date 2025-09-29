@@ -1179,6 +1179,15 @@ router.post('/main-order', [
             itemCount: warehouseGroups[warehouseCode].items.length
         }));
 
+        // Set approval status based on user role
+        if (req.user.role === 'customer') {
+            orderData.status = 'pending_approval';
+        } else {
+            orderData.status = 'approved';
+            orderData.approvedBy = req.user._id;
+            orderData.approvedAt = new Date();
+        }
+
         // Create main order using OrderService
         const orderService = new OrderService();
         const mainOrder = await orderService.createMainOrder(orderData, req.user._id);
@@ -1195,7 +1204,42 @@ router.post('/main-order', [
             .populate('warehouseId', 'name location')
             .populate('items.materialId', 'name category unit');
 
-        logger.info(`Main order created successfully: ${mainOrder.orderNumber} by ${req.user.fullName} - Split into ${subOrders.length} sub-orders`);
+        // Send notifications for customer orders requiring approval
+        if (req.user.role === 'customer' && mainOrder.status === 'pending_approval') {
+            try {
+                // Find all users who can approve orders (admin, warehouse, cashier)
+                const approvers = await User.find({
+                    role: { $in: ['admin', 'warehouse', 'cashier'] },
+                    isActive: true
+                });
+
+                // Create notifications for each approver
+                const notifications = approvers.map(approver => ({
+                    toUserId: approver._id,
+                    toRole: approver.role.toUpperCase(),
+                    type: 'NEW_ORDER_APPROVAL',
+                    message: `New main order #${mainOrder.orderNumber} from ${mainOrder.customerId.fullName} requires approval. ${mainOrder.items.length} items ordered.`,
+                    meta: {
+                        orderId: mainOrder._id,
+                        orderNumber: mainOrder.orderNumber,
+                        customerName: mainOrder.customerId.fullName,
+                        customerEmail: mainOrder.customerId.email,
+                        itemCount: mainOrder.items.length,
+                        createdAt: mainOrder.createdAt
+                    }
+                }));
+
+                // Save all notifications
+                await Notification.insertMany(notifications);
+
+                logger.info(`Main order approval notifications sent for order ${mainOrder.orderNumber} to ${approvers.length} approvers`);
+            } catch (notificationError) {
+                // Don't fail the order creation if notifications fail
+                logger.error('Failed to send main order approval notifications:', notificationError);
+            }
+        }
+
+        logger.info(`Main order created successfully: ${mainOrder.orderNumber} by ${req.user.fullName} - Split into ${subOrders.length} sub-orders - Status: ${mainOrder.status}`);
 
         res.status(201).json({
             success: true,
@@ -1536,6 +1580,180 @@ router.get('/sub-orders', authorize('admin', 'warehouse', 'cashier'), async (req
         res.status(500).json({
             success: false,
             error: 'Failed to fetch sub-orders',
+            details: error.message
+        });
+    }
+});
+
+// Approve Main Order endpoint
+router.patch('/main-order/:id/approve', authorize('admin', 'warehouse', 'cashier'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { notes } = req.body;
+
+        const mainOrder = await MainOrder.findById(id)
+            .populate('customerId', 'fullName email')
+            .populate('items.materialId', 'name category unit');
+
+        if (!mainOrder) {
+            return res.status(404).json({
+                success: false,
+                error: 'Main order not found'
+            });
+        }
+
+        if (mainOrder.status !== 'pending_approval') {
+            return res.status(400).json({
+                success: false,
+                error: 'Main order is not pending approval'
+            });
+        }
+
+        // Update order status to approved
+        mainOrder.status = 'approved';
+        mainOrder.approvedBy = req.user._id;
+        mainOrder.approvedAt = new Date();
+
+        if (notes) {
+            mainOrder.notes = (mainOrder.notes || '') + `\nApproved by ${req.user.fullName}: ${notes}`;
+        }
+
+        await mainOrder.save();
+
+        // Create notification for customer
+        await Notification.create({
+            toUserId: mainOrder.customerId._id,
+            type: 'ORDER_STATUS_CHANGE',
+            message: `Your main order #${mainOrder.orderNumber} has been approved and will be processed soon.`,
+            meta: {
+                orderId: mainOrder._id,
+                orderNumber: mainOrder.orderNumber,
+                previousStatus: 'pending_approval',
+                newStatus: 'approved',
+                approvedBy: req.user.fullName,
+                approvedAt: mainOrder.approvedAt
+            }
+        });
+
+        // Send email confirmation to customer
+        try {
+            const emailService = await import('../utils/emailService.js');
+            await emailService.sendEmail({
+                to: mainOrder.customerId.email,
+                template: 'order-confirmed',
+                data: {
+                    customerName: mainOrder.customerId.fullName,
+                    orderNumber: mainOrder.orderNumber,
+                    orderDate: mainOrder.createdAt.toLocaleDateString(),
+                    approvedBy: req.user.fullName,
+                    items: mainOrder.items.map(item => ({
+                        name: item.materialId.name,
+                        quantity: item.requestedQty
+                    }))
+                }
+            });
+            logger.info(`Main order confirmation email sent to ${mainOrder.customerId.email} for order ${mainOrder.orderNumber}`);
+        } catch (emailError) {
+            logger.error('Failed to send main order confirmation email:', emailError);
+            // Don't fail the approval if email fails
+        }
+
+        logger.info(`Main order ${mainOrder.orderNumber} approved by ${req.user.fullName}`);
+
+        res.json({
+            success: true,
+            message: 'Main order approved successfully',
+            data: {
+                orderNumber: mainOrder.orderNumber,
+                status: mainOrder.status,
+                approvedBy: req.user.fullName,
+                approvedAt: mainOrder.approvedAt
+            }
+        });
+
+    } catch (error) {
+        logger.error('Main order approval error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to approve main order',
+            details: error.message
+        });
+    }
+});
+
+// Reject Main Order endpoint
+router.patch('/main-order/:id/reject', authorize('admin', 'warehouse', 'cashier'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { reason } = req.body;
+
+        if (!reason || reason.trim().length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Rejection reason is required'
+            });
+        }
+
+        const mainOrder = await MainOrder.findById(id)
+            .populate('customerId', 'fullName email');
+
+        if (!mainOrder) {
+            return res.status(404).json({
+                success: false,
+                error: 'Main order not found'
+            });
+        }
+
+        if (mainOrder.status !== 'pending_approval') {
+            return res.status(400).json({
+                success: false,
+                error: 'Main order is not pending approval'
+            });
+        }
+
+        // Update order status to rejected
+        mainOrder.status = 'rejected';
+        mainOrder.rejectedBy = req.user._id;
+        mainOrder.rejectedAt = new Date();
+        mainOrder.rejectionReason = reason.trim();
+
+        await mainOrder.save();
+
+        // Create notification for customer
+        await Notification.create({
+            toUserId: mainOrder.customerId._id,
+            type: 'ORDER_STATUS_CHANGE',
+            message: `Your main order #${mainOrder.orderNumber} has been rejected. Reason: ${reason}`,
+            meta: {
+                orderId: mainOrder._id,
+                orderNumber: mainOrder.orderNumber,
+                previousStatus: 'pending_approval',
+                newStatus: 'rejected',
+                rejectedBy: req.user.fullName,
+                rejectedAt: mainOrder.rejectedAt,
+                rejectionReason: reason
+            }
+        });
+
+        logger.info(`Main order ${mainOrder.orderNumber} rejected by ${req.user.fullName}. Reason: ${reason}`);
+
+        res.json({
+            success: true,
+            message: 'Main order rejected successfully',
+            data: {
+                orderNumber: mainOrder.orderNumber,
+                status: mainOrder.status,
+                rejectedBy: req.user.fullName,
+                rejectedAt: mainOrder.rejectedAt,
+                rejectionReason: reason
+            }
+        });
+
+    } catch (error) {
+        logger.error('Main order rejection error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to reject main order',
             details: error.message
         });
     }

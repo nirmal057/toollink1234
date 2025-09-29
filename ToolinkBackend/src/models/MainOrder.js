@@ -74,8 +74,27 @@ const mainOrderSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['created', 'scheduled', 'split_scheduled', 'partially-dispatched', 'completed', 'cancelled'],
-        default: 'created'
+        enum: ['pending_approval', 'approved', 'created', 'scheduled', 'split_scheduled', 'partially-dispatched', 'completed', 'cancelled', 'rejected'],
+        default: 'pending_approval'
+    },
+    approvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    approvedAt: {
+        type: Date
+    },
+    rejectedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    rejectedAt: {
+        type: Date
+    },
+    rejectionReason: {
+        type: String,
+        trim: true,
+        maxlength: 500
     },
 
     subOrderIds: [{
