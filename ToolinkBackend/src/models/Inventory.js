@@ -86,6 +86,19 @@ const inventorySchema = new mongoose.Schema({
             'Other'
         ]
     },
+    categoryId: {
+        type: String,
+        trim: true,
+        index: true,
+        validate: {
+            validator: function (value) {
+                // If categoryId is provided, validate format (e.g., W1-001, W2-005, etc.)
+                if (!value) return true; // Optional field
+                return /^(W1|W2|W3|WM)-\d{3}$/.test(value);
+            },
+            message: 'Category ID must follow format: W1-001, W2-005, W3-012, WM-004, etc.'
+        }
+    },
     warehouse: {
         type: String,
         required: true,

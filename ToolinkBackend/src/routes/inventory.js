@@ -3,6 +3,7 @@ import { body, validationResult } from 'express-validator';
 import Inventory from '../models/Inventory.js';
 import { authorize, authenticateToken } from '../middleware/auth.js';
 import logger from '../utils/logger.js';
+import { WarehouseCategoryUtils } from '../config/warehouseCategories.js';
 
 const router = express.Router();
 
@@ -80,13 +81,16 @@ const inventoryValidation = [
         'Plumbing Supplies',
         'Tiles & Ceramics',
         'Roofing Materials',
+        'Hardware & Fasteners',
+        'Angle Grinders',
+        'Masonry Blocks',
         'Materials',
         'Other'
     ]).withMessage('Invalid category'),
     body('warehouse').optional().isIn(['W1', 'W2', 'W3', 'WM']).withMessage('Invalid warehouse'),
     body('warehouseCode').optional().isIn(['W1', 'W2', 'W3', 'WM']).withMessage('Invalid warehouse code'),
     body('quantity').isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer'),
-    body('unit').isIn(['pieces', 'kg', 'liters', 'meters', 'boxes', 'sets', 'pairs', 'rolls', 'sheets', 'units', 'cubic_ft']).withMessage('Invalid unit'),
+    body('unit').isIn(['pieces', 'kg', 'liters', 'meters', 'boxes', 'sets', 'pairs', 'rolls', 'sheets', 'units', 'cubic_ft', 'bags']).withMessage('Invalid unit'),
     body('threshold').isInt({ min: 0 }).withMessage('Threshold must be a non-negative integer'),
     body('location').trim().isLength({ min: 1 }).withMessage('Location is required')
 ];
@@ -408,18 +412,81 @@ router.post('/', authenticateToken, authorize('admin', 'warehouse'), inventoryVa
             itemData.warehouseCode = itemData.warehouse;
         }
 
+        // 🆕 AUTO-ASSIGN CATEGORY ID based on warehouse-category system
+        if (itemData.category && itemData.warehouse) {
+            const categoryInfo = WarehouseCategoryUtils.getCategoryByName(itemData.category, itemData.warehouse);
+            if (categoryInfo) {
+                itemData.categoryId = categoryInfo.id;
+                logger.info(`Auto-assigned category ID: ${categoryInfo.id} for category: ${itemData.category} in warehouse: ${itemData.warehouse}`);
+            }
+        }
+
+        // 🆕 CHECK FOR EXISTING ITEM - Smart inventory management
+        // Look for existing item with same name, category, and warehouse
+        const existingItem = await Inventory.findOne({
+            name: { $regex: new RegExp(`^${itemData.name.trim()}$`, 'i') }, // Case-insensitive exact match
+            category: itemData.category,
+            warehouse: itemData.warehouse,
+            status: { $ne: 'discontinued' } // Only consider active items
+        });
+
+        if (existingItem) {
+            // 🔄 UPDATE EXISTING ITEM - Add quantity to existing stock
+            const oldQuantity = existingItem.current_stock || 0;
+            const addedQuantity = itemData.current_stock || 0;
+            const newQuantity = oldQuantity + addedQuantity;
+
+            existingItem.current_stock = newQuantity;
+            existingItem.quantity = newQuantity;
+            existingItem.updated_by = req.user._id;
+            existingItem.updated_at = new Date();
+
+            // Update supplier info if provided
+            if (itemData.supplier_info) {
+                existingItem.supplier_info = {
+                    ...existingItem.supplier_info,
+                    ...itemData.supplier_info
+                };
+            }
+
+            // Update threshold if new value is higher (better safety margin)
+            if (itemData.min_stock_level > (existingItem.min_stock_level || 0)) {
+                existingItem.min_stock_level = itemData.min_stock_level;
+            }
+
+            await existingItem.save();
+            await existingItem.populate('created_by', 'fullName email');
+            await existingItem.populate('updated_by', 'fullName email');
+
+            logger.info(`Inventory updated: ${existingItem.name} - Added ${addedQuantity} units (${oldQuantity} → ${newQuantity}) by ${req.user.fullName}`);
+
+            return res.status(200).json({
+                success: true,
+                message: `Inventory updated successfully! Added ${addedQuantity} units to existing stock. Total: ${newQuantity} ${itemData.unit}`,
+                data: existingItem,
+                action: 'updated',
+                details: {
+                    previousQuantity: oldQuantity,
+                    addedQuantity: addedQuantity,
+                    newQuantity: newQuantity
+                }
+            });
+        }
+
+        // 🆕 CREATE NEW ITEM - No existing item found
         const item = new Inventory(itemData);
         await item.save();
 
         // Populate creator info
         await item.populate('created_by', 'fullName email');
 
-        logger.info(`Inventory item created: ${item.name} by ${req.user.fullName}`);
+        logger.info(`New inventory item created: ${item.name} (${item.current_stock} ${item.unit}) by ${req.user.fullName}`);
 
         res.status(201).json({
             success: true,
-            message: 'Inventory item created successfully',
-            data: item
+            message: `New inventory item created successfully! Added ${item.current_stock} ${item.unit}`,
+            data: item,
+            action: 'created'
         });
     } catch (error) {
         logger.error('Create inventory item error:', error);
