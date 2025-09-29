@@ -356,13 +356,13 @@ router.post('/', [
                     toUserId: approver._id,
                     toRole: approver.role.toUpperCase(),
                     type: 'NEW_ORDER_APPROVAL',
-                    message: `New order #${order.orderNumber} from ${order.customer.fullName} requires approval. Total: $${order.totalAmount.toFixed(2)}`,
+                    message: `New order #${order.orderNumber} from ${order.customer.fullName} requires approval. ${order.items.length} items ordered.`,
                     meta: {
                         orderId: order._id,
                         orderNumber: order.orderNumber,
                         customerName: order.customer.fullName,
                         customerEmail: order.customer.email,
-                        totalAmount: order.totalAmount,
+
                         itemCount: order.items.length,
                         createdAt: order.createdAt
                     }
@@ -378,7 +378,7 @@ router.post('/', [
             }
         }
 
-        logger.info(`Order created successfully: ${order.orderNumber} by ${req.user.fullName} - Total: ${totalAmount}`);
+        logger.info(`Order created successfully: ${order.orderNumber} by ${req.user.fullName} - ${order.items.length} items`);
 
         res.status(201).json({
             success: true,
@@ -461,8 +461,7 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
                 );
             }
 
-            // Validate new items and calculate totals
-            let totalAmount = 0;
+            // Validate new items - no pricing needed
             const processedItems = [];
 
             for (const item of items) {
@@ -486,18 +485,11 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
                     });
                 }
 
-                const unitPrice = item.unitPrice || inventory.unitPrice || inventory.selling_price || inventory.cost || 0;
-                const totalPrice = unitPrice * item.quantity;
-
                 processedItems.push({
                     inventory: inventory._id,
                     quantity: item.quantity,
-                    unitPrice,
-                    totalPrice,
                     notes: item.notes || ''
                 });
-
-                totalAmount += totalPrice;
             }
 
             // Update inventory for new items
@@ -515,8 +507,7 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
 
             // Update order with new items
             order.items = processedItems;
-            order.totalAmount = totalAmount;
-            order.finalAmount = totalAmount;
+            // No pricing calculations needed for order management system
         }
 
         // Update other allowed fields
@@ -946,7 +937,7 @@ router.patch('/:id/approve', authorize('admin', 'warehouse', 'cashier'), async (
                     orderNumber: order.orderNumber,
                     orderDate: order.createdAt.toLocaleDateString(),
                     approvedBy: req.user.fullName,
-                    totalAmount: order.totalAmount.toFixed(2),
+
                     items: order.items.map(item => ({
                         name: item.inventory.name,
                         quantity: item.quantity
@@ -1133,17 +1124,13 @@ router.post('/main-order', [
         }
 
         // Create material price map
-        const materialPriceMap = new Map(materials.map(m => [m._id.toString(), m.sellingPrice]));
-
-        // Prepare order data
+        // Prepare order data - no pricing needed for order management system
         const orderData = {
             customerId: customer._id,
             items: items.map(item => ({
                 materialId: item.materialId,
                 requestedQty: item.requestedQty,
-                preferredWarehouseId: item.preferredWarehouseId,
-                unitPrice: materialPriceMap.get(item.materialId.toString()) || 0,
-                totalPrice: (materialPriceMap.get(item.materialId.toString()) || 0) * item.requestedQty
+                preferredWarehouseId: item.preferredWarehouseId
             })),
             deliveryAddress,
             requestedDeliveryDate: requestedDeliveryDate ? new Date(requestedDeliveryDate) : null,
@@ -1152,9 +1139,6 @@ router.post('/main-order', [
             notes,
             createdBy: req.user._id
         };
-
-        // Calculate total amount
-        orderData.totalAmount = orderData.items.reduce((total, item) => total + item.totalPrice, 0);
 
         // 🆕 ENHANCED ORDER CREATION WITH ID SYSTEM
 
@@ -1192,8 +1176,7 @@ router.post('/main-order', [
         orderData.warehouseBreakdown = warehouseCodes.map(warehouseCode => ({
             warehouseCode,
             subOrderId: OrderIdManager.generateSubOrderId(mainOrderId, warehouseCode, 1),
-            itemCount: warehouseGroups[warehouseCode].items.length,
-            totalAmount: warehouseGroups[warehouseCode].totalAmount
+            itemCount: warehouseGroups[warehouseCode].items.length
         }));
 
         // Create main order using OrderService
@@ -1957,7 +1940,7 @@ async function generateOrderPDF(orderData, type) {
                         <p><strong>Scheduled Date:</strong> ${new Date(orderData.scheduledAt).toLocaleDateString()}</p>
                         <p><strong>Scheduled Time:</strong> ${orderData.scheduledTime}</p>
                         <p><strong>Estimated Duration:</strong> ${orderData.estimatedDuration} minutes</p>
-                        <p><strong>Total Amount:</strong> <span style="color: #dc2626; font-size: 18px;">Rs. ${orderData.totalAmount.toFixed(2)}</span></p>
+                        <p><strong>Items Count:</strong> <span style="color: #2563eb; font-size: 18px;">${orderData.items.length} items</span></p>
                     </div>
                 </div>
 
@@ -1981,8 +1964,8 @@ async function generateOrderPDF(orderData, type) {
                             </tr>
                         `).join('')}
                         <tr style="background-color: #f3f4f6; font-weight: bold;">
-                            <td colspan="3" style="padding: 12px; text-align: right; border: 1px solid #e5e7eb;">Sub-Order Total:</td>
-                            <td style="padding: 12px; text-align: right; border: 1px solid #e5e7eb; color: #dc2626;">Rs. ${orderData.totalAmount.toFixed(2)}</td>
+                            <td colspan="3" style="padding: 12px; text-align: right; border: 1px solid #e5e7eb;">Items Total:</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e5e7eb; color: #2563eb;">${orderData.items.length} items</td>
                         </tr>
                     </tbody>
                 </table>
@@ -2004,7 +1987,7 @@ async function generateOrderPDF(orderData, type) {
                         <h3 style="color: #2563eb; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Order Summary</h3>
                         <p><strong>Total Items:</strong> ${orderData.items.length}</p>
                         <p><strong>Requested Delivery:</strong> ${orderData.requestedDeliveryDate ? new Date(orderData.requestedDeliveryDate).toLocaleDateString() : 'ASAP'}</p>
-                        <p style="font-size: 20px; color: #dc2626;"><strong>Total Amount: Rs. ${orderData.totalAmount.toFixed(2)}</strong></p>
+                        <p style="font-size: 20px; color: #2563eb;"><strong>Total Items: ${orderData.items.length}</strong></p>
                     </div>
                 </div>
 
@@ -2031,7 +2014,7 @@ async function generateOrderPDF(orderData, type) {
                         `).join('')}
                         <tr style="background-color: #f3f4f6; font-weight: bold;">
                             <td colspan="4" style="padding: 12px; text-align: right; border: 1px solid #e5e7eb;">Order Total:</td>
-                            <td style="padding: 12px; text-align: right; border: 1px solid #e5e7eb; color: #dc2626;">Rs. ${orderData.totalAmount.toFixed(2)}</td>
+                            <td style="padding: 12px; text-align: right; border: 1px solid #e5e7eb; color: #2563eb;">${orderData.items.length} items</td>
                         </tr>
                     </tbody>
                 </table>

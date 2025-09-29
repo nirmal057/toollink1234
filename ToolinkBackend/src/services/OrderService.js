@@ -22,13 +22,7 @@ class OrderService {
                 throw new Error('One or more materials not found or inactive');
             }
 
-            // Calculate item prices
-            const materialPriceMap = new Map(materials.map(m => [m._id.toString(), m.sellingPrice]));
-
-            orderData.items.forEach(item => {
-                item.unitPrice = materialPriceMap.get(item.materialId.toString()) || 0;
-                item.totalPrice = item.unitPrice * item.requestedQty;
-            });
+            // Order management system - no pricing needed
 
             // Create main order
             const mainOrder = new MainOrder({

@@ -55,16 +55,7 @@ const materialSchema = new mongoose.Schema({
         email: String,
         phone: String
     },
-    costPrice: {
-        type: Number,
-        min: 0,
-        default: 0
-    },
-    sellingPrice: {
-        type: Number,
-        min: 0,
-        default: 0
-    },
+
     warehouseCode: {
         type: String,
         required: true,
@@ -84,13 +75,7 @@ const materialSchema = new mongoose.Schema({
 materialSchema.index({ category: 1, isActive: 1 });
 materialSchema.index({ name: 'text', description: 'text' });
 
-// Virtual for profit margin
-materialSchema.virtual('profitMargin').get(function () {
-    if (this.costPrice > 0) {
-        return ((this.sellingPrice - this.costPrice) / this.costPrice) * 100;
-    }
-    return 0;
-});
+// Profit margin calculation removed as pricing is not needed
 
 const Material = mongoose.model('Material', materialSchema);
 

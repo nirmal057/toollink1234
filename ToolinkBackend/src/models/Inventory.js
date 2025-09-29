@@ -287,7 +287,7 @@ inventorySchema.statics.getStatistics = async function (filter = {}) {
                 inactiveItems: { $sum: { $cond: [{ $eq: ['$status', 'inactive'] }, 1, 0] } },
                 lowStockItems: { $sum: { $cond: [{ $lte: ['$current_stock', '$min_stock_level'] }, 1, 0] } },
                 outOfStockItems: { $sum: { $cond: [{ $eq: ['$current_stock', 0] }, 1, 0] } },
-                totalValue: { $sum: { $multiply: ['$current_stock', { $ifNull: ['$unit_price', '$cost', 0] }] } },
+
                 totalQuantity: { $sum: '$current_stock' }
             }
         }
@@ -322,7 +322,7 @@ inventorySchema.statics.getStatistics = async function (filter = {}) {
         inactiveItems: 0,
         lowStockItems: 0,
         outOfStockItems: 0,
-        totalValue: 0,
+
         totalQuantity: 0
     };
 

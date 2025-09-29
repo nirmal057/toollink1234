@@ -588,7 +588,7 @@ const emailTemplates = {
             <p style="margin: 5px 0;"><strong>Order Number:</strong> #${data.orderNumber}</p>
             <p style="margin: 5px 0;"><strong>Order Date:</strong> ${data.orderDate}</p>
             <p style="margin: 5px 0;"><strong>Approved by:</strong> ${data.approvedBy}</p>
-            <p style="margin: 5px 0;"><strong>Total Amount:</strong> Rs. ${data.totalAmount}</p>
+            <p style="margin: 5px 0;"><strong>Items Count:</strong> ${data.items.length} items</p>
           </div>
 
           <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 25px 0;">

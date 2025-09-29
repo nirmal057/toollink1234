@@ -90,22 +90,9 @@ const subOrderSchema = new mongoose.Schema({
             required: true,
             min: 1
         },
-        unitPrice: {
-            type: Number,
-            min: 0,
-            default: 0
-        },
-        totalPrice: {
-            type: Number,
-            min: 0,
-            default: 0
-        }
+
     }],
-    totalAmount: {
-        type: Number,
-        min: 0,
-        default: 0
-    },
+
     scheduledAt: {
         type: Date,
         required: true
@@ -188,15 +175,7 @@ subOrderSchema.pre('save', async function (next) {
     next();
 });
 
-// Calculate total amount before saving
-subOrderSchema.pre('save', function (next) {
-    if (this.items && this.items.length > 0) {
-        this.totalAmount = this.items.reduce((total, item) => {
-            return total + (item.qty * item.unitPrice);
-        }, 0);
-    }
-    next();
-});
+// Total amount calculation removed as pricing is not needed
 
 // Method to add history entry
 subOrderSchema.methods.addHistory = function (action, byUserId, note = '') {

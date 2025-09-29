@@ -26,8 +26,7 @@ const mainOrderSchema = new mongoose.Schema({
             enum: ['W1', 'W2', 'W3', 'WM']
         },
         subOrderId: String,
-        itemCount: Number,
-        totalAmount: Number
+        itemCount: Number
     }],
     customerId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -49,16 +48,7 @@ const mainOrderSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Warehouse'
         },
-        unitPrice: {
-            type: Number,
-            min: 0,
-            default: 0
-        },
-        totalPrice: {
-            type: Number,
-            min: 0,
-            default: 0
-        }
+
     }],
     deliveryAddress: {
         street: { type: String, required: true },
@@ -87,11 +77,7 @@ const mainOrderSchema = new mongoose.Schema({
         enum: ['created', 'scheduled', 'split_scheduled', 'partially-dispatched', 'completed', 'cancelled'],
         default: 'created'
     },
-    totalAmount: {
-        type: Number,
-        min: 0,
-        default: 0
-    },
+
     subOrderIds: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SubOrder'
@@ -129,11 +115,7 @@ mainOrderSchema.pre('save', async function (next) {
     next();
 });
 
-// Calculate total amount before saving
-mainOrderSchema.pre('save', function (next) {
-    this.totalAmount = this.items.reduce((total, item) => total + item.totalPrice, 0);
-    next();
-});
+// Remove the total amount calculation as pricing is not needed
 
 // Add pagination plugin
 mainOrderSchema.plugin(mongoosePaginate);
