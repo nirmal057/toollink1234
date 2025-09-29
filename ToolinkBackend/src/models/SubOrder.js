@@ -17,6 +17,12 @@ const subOrderSchema = new mongoose.Schema({
         ref: 'Warehouse',
         required: true
     },
+    // Warehouse code for easy identification (W1, W2, W3, WM)
+    warehouseCode: {
+        type: String,
+        required: true,
+        enum: ['W1', 'W2', 'W3', 'WM']
+    },
     materialCategory: {
         type: String,
         required: true,
@@ -131,13 +137,18 @@ const subOrderSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Generate sub-order number
+// Generate sub-order number with warehouse code for easy identification
 subOrderSchema.pre('save', async function (next) {
     if (!this.subOrderNumber) {
         const mainOrder = await mongoose.model('MainOrder').findById(this.mainOrderId);
         if (mainOrder) {
-            const count = await this.constructor.countDocuments({ mainOrderId: this.mainOrderId });
-            this.subOrderNumber = `${mainOrder.orderNumber}-${String(count + 1).padStart(2, '0')}`;
+            const count = await this.constructor.countDocuments({
+                mainOrderId: this.mainOrderId,
+                warehouseCode: this.warehouseCode
+            });
+            // Include warehouse code in sub-order number for easy identification
+            // Format: ORD001-W1-01, ORD001-W2-01, etc.
+            this.subOrderNumber = `${mainOrder.orderNumber}-${this.warehouseCode}-${String(count + 1).padStart(2, '0')}`;
         }
     }
     next();

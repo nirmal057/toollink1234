@@ -57,6 +57,12 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Warehouse'
     },
+    // Warehouse code for easy identification and filtering (W1, W2, W3, WM)
+    warehouseCode: {
+        type: String,
+        enum: ['W1', 'W2', 'W3', 'WM'],
+        required: function () { return this.role === 'warehouse'; }
+    },
     isActive: {
         type: Boolean,
         default: true

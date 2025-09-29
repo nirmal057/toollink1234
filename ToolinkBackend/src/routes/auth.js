@@ -242,6 +242,7 @@ router.post('/login', loginValidation, async (req, res) => {
                 email: user.email,
                 fullName: user.fullName,
                 role: user.role,
+                warehouseCode: user.warehouseCode, // Include warehouse code for warehouse users
                 isActive: user.isActive,
                 isApproved: user.isApproved,
                 emailVerified: user.emailVerified,

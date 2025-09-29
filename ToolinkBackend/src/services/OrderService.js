@@ -53,6 +53,54 @@ class OrderService {
     /**
      * Split main order into sub-orders by material category and warehouse
      */
+    /**
+     * Get warehouse code based on material category
+     * WM = Tools & Equipment, W1 = Sand & Aggregates, W2 = Blocks & Masonry, W3 = Steel & Metal
+     */
+    getWarehouseCodeByCategory(materialCategory) {
+        const categoryMapping = {
+            'Tools & Equipment': 'WM',
+            'Safety Equipment': 'WM',
+            'Hardware & Fasteners': 'WM',
+
+            'Aggregates': 'W1',
+            'Sand': 'W1',
+            'Gravel': 'W1',
+
+            'Bricks & Blocks': 'W2',
+            'Cement': 'W2',
+            'Concrete': 'W2',
+            'Mortar': 'W2',
+
+            'Steel & Reinforcement': 'W3',
+            'Metal': 'W3',
+            'Structural Steel': 'W3',
+            'Pipes & Fittings': 'W3',
+            'Plumbing': 'W3',
+
+            // Default mappings for other categories
+            'Roofing Materials': 'W2',
+            'Electrical': 'W3',
+            'Paint & Chemicals': 'W2',
+            'Other': 'WM'
+        };
+
+        return categoryMapping[materialCategory] || 'WM';
+    }
+
+    /**
+     * Find warehouse by warehouse code
+     */
+    async findWarehouseByCode(warehouseCode) {
+        return await Warehouse.findOne({
+            $or: [
+                { code: warehouseCode },
+                { name: { $regex: warehouseCode, $options: 'i' } }
+            ],
+            isActive: true
+        });
+    }
+
     async splitMainOrder(mainOrderId) {
         try {
             const mainOrder = await MainOrder.findById(mainOrderId)
@@ -69,91 +117,54 @@ class OrderService {
             }
 
             const warehouses = await Warehouse.find({ isActive: true });
-            const subOrdersMap = new Map(); // Key: "materialCategory-warehouseId"
+            const subOrdersMap = new Map(); // Key: "warehouseCode"
             const subOrders = [];
 
-            // Group items by material category and warehouse
+            // Group items by material category and assign to specific warehouses
             for (const item of mainOrder.items) {
-                let remainingQty = item.requestedQty;
                 const materialCategory = item.materialId.category;
+                const warehouseCode = this.getWarehouseCodeByCategory(materialCategory);
 
-                // Determine warehouse priority (preferred first, then by stock availability)
-                let warehousePriority = [...warehouses];
+                // Find the target warehouse for this material category
+                let targetWarehouse = await this.findWarehouseByCode(warehouseCode);
 
-                if (item.preferredWarehouseId) {
-                    const preferredWarehouse = warehouses.find(w =>
-                        w._id.toString() === item.preferredWarehouseId.toString()
-                    );
-                    if (preferredWarehouse) {
-                        warehousePriority = [preferredWarehouse, ...warehouses.filter(w =>
-                            w._id.toString() !== item.preferredWarehouseId.toString()
-                        )];
-                    }
+                // If specific warehouse not found, use any available warehouse
+                if (!targetWarehouse) {
+                    targetWarehouse = warehouses[0];
                 }
 
-                // Allocate quantity across warehouses
-                for (const warehouse of warehousePriority) {
-                    if (remainingQty <= 0) break;
+                // Find or create sub-order for this warehouse
+                let subOrder = subOrdersMap.get(warehouseCode);
+                if (!subOrder) {
+                    // Calculate delivery date based on material category and warehouse location
+                    const scheduledDate = this.calculateDeliveryDate(materialCategory, targetWarehouse, mainOrder.requestedDeliveryDate);
 
-                    const availableStock = await StockLedger.getCurrentStock(
-                        warehouse._id,
-                        item.materialId._id
-                    );
+                    subOrder = new SubOrder({
+                        mainOrderId: mainOrder._id,
+                        warehouseId: targetWarehouse._id,
+                        warehouseCode: warehouseCode, // Add warehouse code for easy identification
+                        materialCategory: materialCategory,
+                        items: [],
+                        totalAmount: 0,
+                        scheduledAt: scheduledDate.date,
+                        scheduledTime: scheduledDate.time,
+                        estimatedDuration: scheduledDate.estimatedDuration,
+                        deliverySequence: this.getDeliverySequence(materialCategory)
+                    });
 
-                    if (availableStock > 0) {
-                        const allocatedQty = Math.min(remainingQty, availableStock);
-                        const subOrderKey = `${materialCategory}-${warehouse._id}`;
-
-                        // Find or create sub-order for this material category + warehouse combination
-                        let subOrder = subOrdersMap.get(subOrderKey);
-                        if (!subOrder) {
-                            // Calculate delivery date based on material category and warehouse location
-                            const scheduledDate = this.calculateDeliveryDate(materialCategory, warehouse, mainOrder.requestedDeliveryDate);
-
-                            subOrder = new SubOrder({
-                                mainOrderId: mainOrder._id,
-                                warehouseId: warehouse._id,
-                                materialCategory: materialCategory,
-                                items: [],
-                                totalAmount: 0,
-                                scheduledAt: scheduledDate.date,
-                                scheduledTime: scheduledDate.time,
-                                estimatedDuration: scheduledDate.estimatedDuration,
-                                deliverySequence: this.getDeliverySequence(materialCategory)
-                            });
-
-                            subOrdersMap.set(subOrderKey, subOrder);
-                        }
-
-                        // Add item to sub-order
-                        subOrder.items.push({
-                            materialId: item.materialId._id,
-                            materialName: item.materialId.name,
-                            qty: allocatedQty,
-                            unitPrice: item.unitPrice,
-                            totalPrice: allocatedQty * item.unitPrice
-                        });
-
-                        subOrder.totalAmount += allocatedQty * item.unitPrice;
-                        remainingQty -= allocatedQty;
-                    }
+                    subOrdersMap.set(warehouseCode, subOrder);
                 }
 
-                // If quantity couldn't be fully allocated, create notification
-                if (remainingQty > 0) {
-                    await NotificationService.create(
-                        'warehouse',
-                        null,
-                        'MATERIAL_REFILL_NEEDED',
-                        `Insufficient stock for ${item.materialId.name}. Short by ${remainingQty} ${item.materialId.unit}`,
-                        {
-                            materialId: item.materialId._id,
-                            shortQuantity: remainingQty,
-                            mainOrderId: mainOrder._id,
-                            materialCategory: item.materialId.category
-                        }
-                    );
-                }
+                // Add item to sub-order
+                subOrder.items.push({
+                    materialId: item.materialId._id,
+                    materialName: item.materialId.name,
+                    qty: item.requestedQty, // Use full requested quantity
+                    unitPrice: item.unitPrice,
+                    totalPrice: item.requestedQty * item.unitPrice
+                });
+
+                subOrder.totalAmount += item.requestedQty * item.unitPrice;
             }
 
             // Save all sub-orders and add history

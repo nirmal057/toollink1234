@@ -400,14 +400,20 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
     body('items.*.inventory').optional().isMongoId().withMessage('Invalid inventory ID'),
     body('items.*.quantity').optional().isInt({ min: 1 }).withMessage('Quantity must be at least 1')
 ], async (req, res) => {
-    const session = await mongoose.startSession();
+    // Skip transactions for local development - use simple updates
+    const useTransactions = process.env.NODE_ENV === 'production';
+    let session = null;
+
+    if (useTransactions) {
+        session = await mongoose.startSession();
+        await session.startTransaction();
+    }
 
     try {
-        await session.startTransaction();
 
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            await session.abortTransaction();
+            if (session) await session.abortTransaction();
             return res.status(400).json({
                 success: false,
                 error: 'Validation failed',
@@ -415,10 +421,10 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
             });
         }
 
-        const order = await Order.findById(req.params.id).session(session);
+        const order = await Order.findById(req.params.id);
 
         if (!order) {
-            await session.abortTransaction();
+            if (session) await session.abortTransaction();
             return res.status(404).json({
                 success: false,
                 error: 'Order not found',
@@ -428,7 +434,7 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
 
         // Only allow editing pending orders
         if (order.status !== 'pending') {
-            await session.abortTransaction();
+            if (session) await session.abortTransaction();
             return res.status(400).json({
                 success: false,
                 error: 'Only pending orders can be edited',
@@ -449,8 +455,7 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
                             current_stock: oldItem.quantity,
                             quantity: oldItem.quantity
                         }
-                    },
-                    { session }
+                    }
                 );
             }
 
@@ -459,10 +464,10 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
             const processedItems = [];
 
             for (const item of items) {
-                const inventory = await Inventory.findById(item.inventory).session(session);
+                const inventory = await Inventory.findById(item.inventory);
 
                 if (!inventory || inventory.status !== 'active') {
-                    await session.abortTransaction();
+                    if (session) await session.abortTransaction();
                     return res.status(400).json({
                         success: false,
                         error: `Item ${inventory ? inventory.name : 'unknown'} is not available`,
@@ -471,7 +476,7 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
                 }
 
                 if (inventory.current_stock < item.quantity) {
-                    await session.abortTransaction();
+                    if (session) await session.abortTransaction();
                     return res.status(400).json({
                         success: false,
                         error: `Insufficient stock for ${inventory.name}. Available: ${inventory.current_stock}`,
@@ -502,8 +507,7 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
                             current_stock: -item.quantity,
                             quantity: -item.quantity
                         }
-                    },
-                    { session }
+                    }
                 );
             }
 
@@ -520,9 +524,9 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
         if (notes !== undefined) order.notes = notes;
 
         order.updatedBy = req.user._id;
-        await order.save({ session });
+        await order.save();
 
-        await session.commitTransaction();
+        if (session) await session.commitTransaction();
 
         // Populate order details for response
         await order.populate('customer', 'fullName email phone');
@@ -536,7 +540,10 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
             data: order
         });
     } catch (error) {
-        await session.abortTransaction();
+        if (session) {
+            await session.abortTransaction();
+            await session.endSession();
+        }
         logger.error('Update order error:', error);
         res.status(500).json({
             success: false,
@@ -545,7 +552,9 @@ router.put('/:id', authorize('admin', 'cashier', 'warehouse'), [
             details: error.message
         });
     } finally {
-        await session.endSession();
+        if (session) {
+            await session.endSession();
+        }
     }
 });
 
@@ -2051,5 +2060,142 @@ async function generateOrderPDF(orderData, type) {
         return Buffer.from(htmlContent, 'utf8');
     }
 }
+
+// Get sub-orders for specific warehouse (warehouse-specific filtering)
+router.get('/sub-orders/warehouse/:warehouseCode', authenticateToken, async (req, res) => {
+    try {
+        const { warehouseCode } = req.params;
+
+        // Validate warehouse code
+        if (!['W1', 'W2', 'W3', 'WM'].includes(warehouseCode)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid warehouse code. Must be W1, W2, W3, or WM'
+            });
+        }
+
+        // Check if user has access to this warehouse
+        if (req.user.role === 'warehouse' && req.user.warehouseCode !== warehouseCode) {
+            return res.status(403).json({
+                success: false,
+                error: 'Access denied. You can only view sub-orders for your assigned warehouse.'
+            });
+        }
+
+        // Fetch sub-orders for this warehouse code
+        const subOrders = await SubOrder.find({ warehouseCode: warehouseCode })
+            .populate('mainOrderId', 'orderNumber customerId requestedDeliveryDate')
+            .populate({
+                path: 'mainOrderId',
+                populate: {
+                    path: 'customerId',
+                    select: 'fullName email username'
+                }
+            })
+            .populate('warehouseId', 'name location')
+            .populate('assignedTo', 'fullName username')
+            .sort({ createdAt: -1 });
+
+        // Get warehouse category name
+        const categoryNames = {
+            'WM': 'Tools & Equipment',
+            'W1': 'Sand & Aggregates',
+            'W2': 'Blocks & Masonry',
+            'W3': 'Steel & Metal'
+        };
+
+        res.json({
+            success: true,
+            warehouseCode,
+            warehouseName: categoryNames[warehouseCode],
+            subOrders,
+            total: subOrders.length
+        });
+
+    } catch (error) {
+        logger.error('Get warehouse sub-orders error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch warehouse sub-orders',
+            errorType: 'FETCH_WAREHOUSE_SUBORDERS_ERROR'
+        });
+    }
+});
+
+// Get all sub-orders (for admin/general view)
+router.get('/sub-orders', authenticateToken, async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 10,
+            warehouseCode,
+            status,
+            startDate,
+            endDate
+        } = req.query;
+
+        const query = {};
+
+        // Add filters
+        if (warehouseCode && ['W1', 'W2', 'W3', 'WM'].includes(warehouseCode)) {
+            query.warehouseCode = warehouseCode;
+        }
+
+        if (status) {
+            query.status = status;
+        }
+
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) query.createdAt.$lte = new Date(endDate);
+        }
+
+        // Role-based filtering
+        if (req.user.role === 'warehouse') {
+            query.warehouseCode = req.user.warehouseCode;
+        }
+
+        const options = {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            sort: { createdAt: -1 },
+            populate: [
+                {
+                    path: 'mainOrderId',
+                    select: 'orderNumber customerId requestedDeliveryDate',
+                    populate: {
+                        path: 'customerId',
+                        select: 'fullName email username'
+                    }
+                },
+                { path: 'warehouseId', select: 'name location' },
+                { path: 'assignedTo', select: 'fullName username' }
+            ]
+        };
+
+        const result = await SubOrder.paginate(query, options);
+
+        res.json({
+            success: true,
+            subOrders: result.docs,
+            pagination: {
+                page: result.page,
+                pages: result.totalPages,
+                total: result.totalDocs,
+                hasNextPage: result.hasNextPage,
+                hasPrevPage: result.hasPrevPage
+            }
+        });
+
+    } catch (error) {
+        logger.error('Get sub-orders error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch sub-orders',
+            errorType: 'FETCH_SUBORDERS_ERROR'
+        });
+    }
+});
 
 export default router;
